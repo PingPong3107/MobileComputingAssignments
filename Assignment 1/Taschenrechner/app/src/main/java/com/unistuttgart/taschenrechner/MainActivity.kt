@@ -67,8 +67,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.equals.setOnClickListener {
             val expression = binding.textView.text.toString()
-            val expr = ExpressionBuilder(expression).build()
-            binding.textView.text = expr.evaluate().toString()
+            val calculator = Calculation()
+            binding.textView.text = calculator.calculate(expression)
         }
     }
 }
