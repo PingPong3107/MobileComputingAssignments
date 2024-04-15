@@ -1,6 +1,9 @@
 package com.unistuttgart.taschenrechner
 
+import android.content.Context
+import android.widget.Toast
 import net.objecthunter.exp4j.ExpressionBuilder
+import com.unistuttgart.taschenrechner.MainActivity
 
 class Calculation {
 
@@ -29,4 +32,7 @@ class Calculation {
         }
         return test==0
     }
+    
+    fun Context.toast(message: CharSequence)=
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }

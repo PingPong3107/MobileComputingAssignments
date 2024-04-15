@@ -2,12 +2,12 @@ package com.unistuttgart.taschenrechner
 
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.unistuttgart.taschenrechner.databinding.ActivityMainBinding
-import net.objecthunter.exp4j.ExpressionBuilder
 
 class MainActivity : AppCompatActivity() {
 
@@ -68,7 +68,28 @@ class MainActivity : AppCompatActivity() {
         binding.equals.setOnClickListener {
             val expression = binding.textView.text.toString()
             val calculator = Calculation()
-            binding.textView.text = calculator.calculate(expression)
+            val result = calculator.calculate(expression)
+            if (result.contains(":")) {
+                Toast.makeText(this@MainActivity, result.split(":")[1], Toast.LENGTH_SHORT).show()
+            } else if(result == "Error in parentheses"){
+                Toast.makeText(this@MainActivity, "Error in parentheses", Toast.LENGTH_SHORT).show()
+            }
+            else{
+                val historyLines = binding.history.text.split("\n").toMutableList()
+                if(historyLines.size == 5){
+                    historyLines.removeAt(0)
+                    binding.history.text = historyLines.joinToString("\n")
+                }
+                if(binding.history.text.isNotEmpty()){
+                    binding.history.append("\n")
+                }
+
+                binding.history.append(expression)
+                binding.history.append("=")
+                binding.history.append(result)
+                binding.textView.text = ""
+            }
+
         }
     }
 }
