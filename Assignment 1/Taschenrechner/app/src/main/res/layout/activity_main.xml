@@ -20,38 +20,57 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ScrollView
-        android:id="@+id/scrollView"
+        android:id="@+id/historyScrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:padding="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintHeight_percent="0.20">
+        app:layout_constraintHeight_percent="0.15">
 
         <TextView
             android:id="@+id/history"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text=""
+            android:textColor="@color/gray"
             android:textSize="24sp"
             android:gravity="end" />
 
     </ScrollView>
 
-    <TextView
-        android:id="@+id/textView"
+    <View
+        android:id="@+id/separator"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        app:layout_constraintTop_toBottomOf="@id/historyScrollView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+    <ScrollView
+        android:id="@+id/inputScrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:text=""
-        android:textSize="32sp"
-        android:gravity="end"
         android:padding="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scrollView"
+        app:layout_constraintTop_toBottomOf="@id/separator"
         app:layout_constraintBottom_toTopOf="@id/gridLayout"
-        app:layout_constraintHeight_percent="0.10" />
+        app:layout_constraintHeight_percent="0.15">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="32sp"
+            android:gravity="end"
+            android:padding="16dp" />
+
+    </ScrollView>
 
 
     <GridLayout
@@ -65,7 +84,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textView"
+        app:layout_constraintTop_toBottomOf="@id/inputScrollView"
         app:layout_constraintVertical_bias="0.0"
         app:layout_constraintHeight_percent="0.60">
 

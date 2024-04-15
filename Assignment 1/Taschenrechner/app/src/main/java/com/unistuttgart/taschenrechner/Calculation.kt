@@ -29,6 +29,9 @@ class Calculation {
             } else if (s==')') {
                 test--
             }
+            if (test<0) {
+                return false
+            }
         }
         return test==0
     }

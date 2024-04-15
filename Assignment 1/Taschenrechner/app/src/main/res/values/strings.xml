@@ -18,6 +18,6 @@
     <string name="Addition">+</string>
     <string name="_0">0</string>
     <string name="Dot">.</string>
-    <string name="Save">SAVE</string>
+    <string name="Save">S</string>
     <string name="Equals">=</string>
 </resources>
