@@ -20,4 +20,5 @@
     <string name="Dot">.</string>
     <string name="Save">S</string>
     <string name="Equals">=</string>
+    <string name="TooltipText">Thank you for trying out our app!</string>
 </resources>

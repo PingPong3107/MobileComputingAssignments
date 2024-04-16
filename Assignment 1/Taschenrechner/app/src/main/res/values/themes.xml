@@ -5,5 +5,7 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
-    <style name="Theme.Taschenrechner" parent="Base.Theme.Taschenrechner" />
+    <style name="Theme.Taschenrechner" parent="Base.Theme.Taschenrechner">
+        <item name="android:textColorPrimary">@android:color/darker_gray</item>
+    </style>
 </resources>

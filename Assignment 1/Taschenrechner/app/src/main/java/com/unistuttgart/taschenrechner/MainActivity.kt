@@ -1,6 +1,5 @@
 package com.unistuttgart.taschenrechner
 
-import android.content.pm.PackageManager
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Environment
@@ -8,20 +7,12 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.unistuttgart.taschenrechner.databinding.ActivityMainBinding
-import java.io.File
-import android.Manifest
 import android.content.ContentValues
-import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.provider.Settings
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -73,7 +64,6 @@ class MainActivity : AppCompatActivity() {
                     binding.inputScrollView.fullScroll(View.FOCUS_DOWN)
                 }
             }
-
         }
 
         binding.del.setOnClickListener {
@@ -108,10 +98,8 @@ class MainActivity : AppCompatActivity() {
                 if(binding.history.text.isNotEmpty()){
                     binding.history.append("\n")
                 }
-
                 binding.history.append("$expression=$result")
                 binding.textView.text = ""
-
                 binding.historyScrollView.post {
                     binding.historyScrollView.fullScroll(View.FOCUS_DOWN)
                 }
@@ -120,52 +108,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.save.setOnClickListener {
-
-
-            /**else {
-                val history = binding.history.text.toString()
-                val downloadsDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                val file = File(downloadsDirectory, "history.txt")
-                file.writeText(history)
-                toast("History saved to Downloads folder")
-            }
-            */
             val history = binding.history.text.toString()
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                if (!Environment.isExternalStorageManager()) {
-                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                    val uri = Uri.fromParts("package", packageName, null)
-                    intent.data = uri
-                    startActivity(intent)
-                }
                 val resolver = contentResolver
                 val contentValues = ContentValues().apply {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, "history.txt")
                     put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
                     put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
                 }
-
                 val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-
                 resolver.openOutputStream(uri!!)?.bufferedWriter().use { it?.write(history) }
                 toast("History saved to Downloads folder")
-
-
             } else {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this,
-                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        1)
-                }
-
-                val downloadsDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                val file = File(downloadsDirectory, "history.txt")
-                file.writeText(history)
-                toast("History saved to Downloads folder")
+                toast("This feature is only available on Android 11 and above.")
             }
-
         }
 
         binding.save.setOnLongClickListener {

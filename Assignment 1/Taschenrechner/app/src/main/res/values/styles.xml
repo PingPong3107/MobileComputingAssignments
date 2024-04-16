@@ -7,7 +7,7 @@
     </style>
 
     <style name="CalculationSymbolButtons">
-        <item name="android:backgroundTint">@android:color/darker_gray</item>
+        <item name="android:backgroundTint">@color/dim_gray</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">40sp</item>
         <item name="android:layout_margin">5dp</item>

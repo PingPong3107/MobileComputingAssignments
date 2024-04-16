@@ -14,7 +14,8 @@
         android:background="@color/peach_puff"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
-        android:tooltipText="Taschenrechner"
+        android:tooltipText="@string/TooltipText"
+        tools:ignore="UnusedAttribute"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -37,7 +38,6 @@
             android:textColor="@color/gray"
             android:textSize="24sp"
             android:gravity="end" />
-
     </ScrollView>
 
     <View
@@ -48,7 +48,6 @@
         app:layout_constraintTop_toBottomOf="@id/historyScrollView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
 
     <ScrollView
         android:id="@+id/inputScrollView"
@@ -72,14 +71,12 @@
 
     </ScrollView>
 
-
     <GridLayout
         android:id="@+id/gridLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:columnCount="4"
         android:rowCount="5"
-
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -87,8 +84,6 @@
         app:layout_constraintTop_toBottomOf="@id/inputScrollView"
         app:layout_constraintVertical_bias="0.0"
         app:layout_constraintHeight_percent="0.60">
-
-
 
         <Button
             android:id="@+id/leftParenthesis"
@@ -143,7 +138,6 @@
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
             android:text="@string/_8" />
-
 
         <Button
             android:id="@+id/nine"
@@ -270,9 +264,5 @@
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
             android:text="@string/Equals" />
-
     </GridLayout>
-
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>

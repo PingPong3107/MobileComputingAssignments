@@ -1,27 +1,24 @@
 package com.unistuttgart.taschenrechner
 
-import android.content.Context
-import android.widget.Toast
 import net.objecthunter.exp4j.ExpressionBuilder
-import com.unistuttgart.taschenrechner.MainActivity
 
 class Calculation {
 
-    public fun calculate(expression: String): String {
+    fun calculate(expression: String): String {
 
-        if(!testParantheses(expression)){
+        if(!testParentheses(expression)){
             return "Error in parentheses"
         }
 
-        try {
+        return try {
             val result = ExpressionBuilder(expression).build().evaluate()
-            return result.toString()
+            result.toString()
         } catch (e: Exception) {
-            return e.toString()
+            e.toString()
         }
     }
 
-    fun testParantheses(expression: String): Boolean {
+    private fun testParentheses(expression: String): Boolean {
         var test=0
         for (s in expression) {
             if (s=='(') {
@@ -35,7 +32,4 @@ class Calculation {
         }
         return test==0
     }
-    
-    fun Context.toast(message: CharSequence)=
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }
