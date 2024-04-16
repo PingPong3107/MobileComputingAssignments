@@ -65,9 +65,6 @@ class SensorListener: Service() {
         }
     }
 
-    fun toast(message: CharSequence)=
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-
     inner class LocalBinder : Binder() {
         // Return this instance of LocalService so clients can call public methods.
         fun getService(): SensorListener = this@SensorListener
