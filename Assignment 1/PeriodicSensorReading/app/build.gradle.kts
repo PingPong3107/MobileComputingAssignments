@@ -7,6 +7,10 @@ android {
     namespace = "com.unistuttgart.periodicsensorreading"
     compileSdk = 34
 
+    buildFeatures {
+        viewBinding = true
+    }
+
     defaultConfig {
         applicationId = "com.unistuttgart.periodicsensorreading"
         minSdk = 24
