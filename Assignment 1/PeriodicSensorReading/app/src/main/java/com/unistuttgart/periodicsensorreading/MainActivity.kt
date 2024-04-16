@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.graphics.drawable.ColorDrawable
-import android.hardware.Sensor
-import android.hardware.SensorManager
 import android.os.Bundle
 import android.os.IBinder
 import android.widget.Toast
@@ -21,6 +19,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var mService: SensorListener
     private var mBound: Boolean = false
+    private var thresholdService1: Float = 100000.0f
+    private var thresholdService2: Float = 100000.0f
+    private var thresholdService1Reached= false
+    private var thresholdService2Reached= false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -36,11 +38,6 @@ class MainActivity : AppCompatActivity() {
         val toolbarColour = (binding.toolbar.background as ColorDrawable).color
         window.statusBarColor = toolbarColour
 
-
-
-
-
-
         val connection = object : ServiceConnection {
 
             override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -48,11 +45,19 @@ class MainActivity : AppCompatActivity() {
                 mService = binder.getService()
                 mBound = true
 
-
-                // Observe the sensorValue
-                mService.sensorValue.observe(this@MainActivity) { value ->
-                    // Update your UI here with the new sensor value
-                    toast("Sensor Value: $value")
+                mService.lightValue.observe(this@MainActivity) { value ->
+                    binding.light.text = "Light: $value"
+                    if (!thresholdService1Reached && value != null && value > thresholdService1) {
+                        toast("Light value $value exceeds threshold $thresholdService1")
+                        thresholdService1Reached = true
+                    }
+                }
+                mService.magneticValue.observe(this@MainActivity) { value ->
+                    binding.magnetic.text = "Magnetic Field: $value"
+                    if (!thresholdService2Reached && value != null && value > thresholdService2) {
+                        toast("Magnetic Field value $value exceeds threshold $thresholdService2")
+                        thresholdService2Reached = true
+                    }
                 }
             }
 
@@ -63,6 +68,24 @@ class MainActivity : AppCompatActivity() {
 
         Intent(this, SensorListener::class.java).also { intent ->
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
+
+        binding.periodButton.setOnClickListener {
+            if (mBound) {
+                mService.startTimer(binding.periodInput.text.toString().toLong())
+            } else {
+                toast("Service not bound")
+            }
+        }
+
+        binding.ThresholdButton1.setOnClickListener {
+            thresholdService1 = binding.ThresholdInput1.text.toString().toFloat()
+            thresholdService1Reached = false
+        }
+
+        binding.ThresholdButton2.setOnClickListener {
+            thresholdService2 = binding.ThresholdInput2.text.toString().toFloat()
+            thresholdService2Reached = false
         }
 
     }
