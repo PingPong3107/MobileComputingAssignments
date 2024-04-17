@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity() {
         binding.equals.setOnClickListener {
             val expression = binding.textView.text.toString()
             val calculator = Calculation()
-            val result = calculator.calculate(expression)
+            var result = calculator.calculate(expression)
             if (result.contains(":")) {
                 toast(result.split(":")[1])
             } else if(result == "Error in parentheses"){
@@ -90,6 +90,11 @@ class MainActivity : AppCompatActivity() {
                 toast("Empty expression provided.")
             }
             else{
+                // remove pointless ".0"
+                if (result.contains(".") && result.split(".")[1] == "0") {
+                    result = result.split(".")[0]
+                }
+
                 val historyLines = binding.history.text.split("\n").toMutableList()
                 if(historyLines.size == 5){
                     historyLines.removeAt(0)
@@ -102,6 +107,23 @@ class MainActivity : AppCompatActivity() {
                 binding.textView.text = ""
                 binding.historyScrollView.post {
                     binding.historyScrollView.fullScroll(View.FOCUS_DOWN)
+                }
+
+                // easter eggs
+                when (result){
+                    "0" -> toast("Null? NULL!")
+                    "1" -> toast("Einzzz.")
+                    "2" -> toast("Swuai.")
+                    "42" -> toast("The answer to everything!")
+                    "69" -> toast("Nice.")
+                    "420" -> toast("Blaze it!")
+                    "666" -> toast("The number of the devil!")
+                    "1510" -> toast("Fuffzehn Uhr zehn...")
+                    "91448" -> toast("Traut euch, kommt zu mir!")
+                }
+
+                when (expression){
+                    "007" -> toast("Shaken, not stirred.")
                 }
             }
 
