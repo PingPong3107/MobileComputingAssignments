@@ -109,22 +109,7 @@ class MainActivity : AppCompatActivity() {
                     binding.historyScrollView.fullScroll(View.FOCUS_DOWN)
                 }
 
-                // easter eggs
-                when (result){
-                    "0" -> toast("Null? NULL!")
-                    "1" -> toast("Einzzz.")
-                    "2" -> toast("Swuai.")
-                    "42" -> toast("The answer to everything!")
-                    "69" -> toast("Nice.")
-                    "420" -> toast("Blaze it!")
-                    "666" -> toast("The number of the devil!")
-                    "1510" -> toast("Fuffzehn Uhr zehn...")
-                    "91448" -> toast("Traut euch, kommt zu mir!")
-                }
-
-                when (expression){
-                    "007" -> toast("Shaken, not stirred.")
-                }
+                easterEggs(expression, result)
             }
 
         }
@@ -154,5 +139,34 @@ class MainActivity : AppCompatActivity() {
 
     private fun toast(message: CharSequence)=
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+
+    private fun easterEggs(expression: String, result: String){
+        when (result){
+            "0" -> toast("Null? NULL!")
+            "1" -> toast("Einzzz.")
+            "2" -> toast("Swuai.")
+            "8" -> toast("Infinity, from a certain point of view.")
+            "10" -> toast("Zähn.")
+            "13" -> toast("Bad luck.")
+            "42" -> toast("The answer to everything!")
+            "66" -> toast("It will be done, my lord.")
+            "69" -> toast("Nice.")
+            "420" -> toast("Blaze it!")
+            "666" -> toast("The number of the devil!")
+            "1510" -> toast("Fuffzehn Uhr zehn...")
+            "1893" -> toast("Ja der VfB!")
+            "7353" -> toast("Liest man es auf dem Kopf...")
+            "80085" -> toast("Go to horny jail!")
+            "91448" -> toast("Traut euch, kommt zu mir!")
+        }
+
+        when (expression){
+            "007" -> toast("Shaken, not stirred.")
+        }
+
+        if (result.toDouble() > 9000 && result.toDouble() < 10000){
+            toast("It's over 9000!")
+        }
+    }
 }
 
