@@ -52,13 +52,30 @@ class MainActivity : AppCompatActivity() {
                         thresholdService1Reached = true
                     }
                 }
+                mService.wingl.observe(this@MainActivity) { value ->
+                    if (value != null){
+                        val angle = (value + 360) % 360
+                        binding.compass.text = "Orientation: ${Math.round(angle)}°"
+                        binding.circleView.setAngle(angle.toFloat())
+                    }
+
+//                    if (!thresholdService2Reached && value != null && value > thresholdService2) {
+//                        toast("Magnetic Field value $value exceeds threshold $thresholdService2")
+//                        thresholdService2Reached = true
+//                    }
+                }
                 mService.magneticValue.observe(this@MainActivity) { value ->
-                    binding.magnetic.text = "Magnetic Field: $value"
-                    if (!thresholdService2Reached && value != null && value > thresholdService2) {
-                        toast("Magnetic Field value $value exceeds threshold $thresholdService2")
-                        thresholdService2Reached = true
+                    if (value != null){
+                        binding.magnetic.text = "Magneto:\n${value[0]}\n${value[1]}\n${value[2]}"
                     }
                 }
+
+                mService.accelerationValue.observe(this@MainActivity) { value ->
+                    if (value != null){
+                        binding.accelero.text = "Accelero:\n${value[0]}\n${value[1]}\n${value[2]}"
+                    }
+                }
+
             }
 
             override fun onServiceDisconnected(arg0: ComponentName) {
