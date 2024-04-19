@@ -7,12 +7,15 @@ import android.content.ServiceConnection
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.IBinder
+import android.os.Looper
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.unistuttgart.broadcasttest.BackgroundService.Companion.ACTION_THRESHOLD_REACHED
 import com.unistuttgart.broadcasttest.databinding.ActivityMainBinding
+import java.util.logging.Handler
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,6 +47,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if(ContextCompat.checkSelfPermission(this.applicationContext, "android.permission.POST_NOTIFICATIONS") == -1){
+            requestPermissions(arrayOf("android.permission.POST_NOTIFICATIONS"), 0)
+        }
+
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -74,6 +82,8 @@ class MainActivity : AppCompatActivity() {
             backgroundService.thresholdService2 = binding.ThresholdInput2.text.toString().toFloat()
             backgroundService.thresholdService2Reached = false
         }
+
+        val looper = Looper.getMainLooper()
     }
 
     override fun onDestroy() {

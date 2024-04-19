@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
     <permission android:name="com.unistuttgart.broadcasttest.PERMISSION_THRESHOLD_BROADCAST"
         android:protectionLevel="signature"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
