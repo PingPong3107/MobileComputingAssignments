@@ -9,8 +9,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Binder
 import android.os.IBinder
-import android.os.Looper
-import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import java.util.Timer
@@ -27,32 +25,29 @@ class BackgroundService: Service() {
     private lateinit var magneticSensor: Sensor
     private lateinit var acceleroSensor: Sensor
 
-    var testLightValue: MutableLiveData<Float> = MutableLiveData()
-    var testMagneticValue: MutableLiveData<FloatArray> = MutableLiveData()
-    var testAccelerationValue: MutableLiveData<FloatArray> = MutableLiveData()
+    var currentLightValue: Float = 0.0f
+    var currentMagneticValue: FloatArray = floatArrayOf(0.0f, 0.0f, 0.0f)
+    var currentAccelerationValue: FloatArray = floatArrayOf(0.0f, 0.0f, 0.0f)
 
     var lightValue: MutableLiveData<Float> = MutableLiveData()
     var magneticValue: MutableLiveData<FloatArray> = MutableLiveData()
     var accelerationValue: MutableLiveData<FloatArray> = MutableLiveData()
 
-    var wingl: MutableLiveData<Double> = MutableLiveData()
+    var compassAngle: MutableLiveData<Double> = MutableLiveData()
 
     private val sensorEventListener = object : SensorEventListener {
-        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-            // You can handle changes in sensor accuracy here if needed
-        }
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
                 when (it.sensor.type) {
-                    Sensor.TYPE_LIGHT -> testLightValue.postValue(it.values[0])
-                    Sensor.TYPE_MAGNETIC_FIELD -> testMagneticValue.postValue(it.values)
-                    Sensor.TYPE_ACCELEROMETER  -> testAccelerationValue.postValue(it.values)
+                    Sensor.TYPE_LIGHT -> currentLightValue=it.values[0]
+                    Sensor.TYPE_MAGNETIC_FIELD -> currentMagneticValue=it.values
+                    Sensor.TYPE_ACCELEROMETER  -> currentAccelerationValue=it.values
                 }
             }
         }
     }
-
 
     inner class LocalBinder : Binder() {
         fun getService(): BackgroundService = this@BackgroundService
@@ -63,11 +58,6 @@ class BackgroundService: Service() {
         LocalBroadcastManager.getInstance(this).registerReceiver(
             thresholdBroadcast, IntentFilter(ACTION_THRESHOLD_REACHED)
         )
-//        val broadcastIntent = Intent(ACTION_THRESHOLD_REACHED)
-//        broadcastIntent.putExtra("event", "Startup")
-//        broadcastIntent.putExtra("value", "Service started")
-//        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent)
-
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)!!
         magneticSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)!!
@@ -96,34 +86,29 @@ class BackgroundService: Service() {
         timer = Timer().apply {
             scheduleAtFixedRate(object : TimerTask() {
                 override fun run() {
-                    lightValue.postValue(testLightValue.value)
-                    magneticValue.postValue(testMagneticValue.value)
-                    accelerationValue.postValue(testAccelerationValue.value)
-                    wingl.postValue(compass())
+                    lightValue.postValue(currentLightValue)
+                    magneticValue.postValue(currentMagneticValue)
+                    accelerationValue.postValue(currentAccelerationValue)
+                    compassAngle.postValue(compass())
                 }
             }, 0, period)
         }
     }
 
     fun compass(): Double{
-        var returnValue = 1000.0
-        if (testMagneticValue.value != null && testAccelerationValue.value != null) {
-            returnValue = 2000.0
-            val identityMatrix = FloatArray(9)
-            val rotationMatrix = FloatArray(9)
-            val success = SensorManager.getRotationMatrix(
-                rotationMatrix, identityMatrix,
-                testAccelerationValue.value, testMagneticValue.value
-            )
-            if (success) {
-                returnValue = 3000.0
-                val orientationMatrix = FloatArray(3)
-                SensorManager.getOrientation(rotationMatrix, orientationMatrix)
-                val rotationInRadians = orientationMatrix[0]
-                return Math.toDegrees(rotationInRadians.toDouble())
-            }
+        val identityMatrix = FloatArray(9)
+        val rotationMatrix = FloatArray(9)
+        val success = SensorManager.getRotationMatrix(
+            rotationMatrix, identityMatrix,
+            currentAccelerationValue, currentMagneticValue
+        )
+        if (success) {
+            val orientationMatrix = FloatArray(3)
+            SensorManager.getOrientation(rotationMatrix, orientationMatrix)
+            val rotationInRadians = orientationMatrix[0]
+            return Math.toDegrees(rotationInRadians.toDouble())
         }
-        return returnValue
+        return 0.0
     }
 
     companion object {

@@ -1,11 +1,8 @@
 package com.unistuttgart.broadcasttest
 
 import android.app.Application
-import android.content.ComponentName
 import android.content.IntentFilter
-import android.content.ServiceConnection
 import android.os.Build
-import android.os.IBinder
 import androidx.annotation.RequiresApi
 
 class MyApplication : Application() {

@@ -28,62 +28,44 @@ class MainActivity : AppCompatActivity() {
             backgroundService = binder.getService()
 
             backgroundService.lightValue.observe(this@MainActivity) { value ->
-                if(value != null) {
-                    binding.light.text = "Light: $value"
-                    if (!thresholdService1Reached && value > thresholdService1) {
-                        thresholdService1Reached = true
-                        val intent = Intent(ACTION_THRESHOLD_REACHED)
-                        intent.putExtra("sensor", "Light")
-                        intent.putExtra("value", value)
-                        intent.putExtra("threshold", thresholdService1)
-                        sendBroadcast(intent)
-                    }
+                binding.light.text = "Light: $value"
+                if (!thresholdService1Reached && value > thresholdService1) {
+                    thresholdService1Reached = true
+                    val intent = Intent(ACTION_THRESHOLD_REACHED)
+                    intent.putExtra("sensor", "Light")
+                    intent.putExtra("value", value)
+                    intent.putExtra("threshold", thresholdService1)
+                    sendBroadcast(intent)
+                } else if(value < thresholdService1){
+                    thresholdService1Reached = false
                 }
+
             }
-            backgroundService.wingl.observe(this@MainActivity) { value ->
-                if (value != null){
-                    val angle = (value + 360) % 360
-                    binding.compass.text = "Orientation: ${Math.round(angle)}°"
-                    binding.circleView.setAngle(angle.toFloat())
-                    if(!thresholdService2Reached && angle > thresholdService2){
-                        thresholdService2Reached = true
-                        val intent = Intent(ACTION_THRESHOLD_REACHED)
-                        intent.putExtra("sensor", "Angle")
-                        intent.putExtra("value", angle.toFloat())
-                        intent.putExtra("threshold", thresholdService2)
-                        sendBroadcast(intent)
-                    }
-
+            backgroundService.compassAngle.observe(this@MainActivity) { value ->
+                val angle = (value + 360) % 360
+                binding.compass.text = "Orientation: ${Math.round(angle)}°"
+                binding.circleView.setAngle(angle.toFloat())
+                if(!thresholdService2Reached && angle > thresholdService2){
+                    thresholdService2Reached = true
+                    val intent = Intent(ACTION_THRESHOLD_REACHED)
+                    intent.putExtra("sensor", "Angle")
+                    intent.putExtra("value", angle.toFloat())
+                    intent.putExtra("threshold", thresholdService2)
+                    sendBroadcast(intent)
+                } else if(angle < thresholdService2){
+                    thresholdService2Reached = false
                 }
 
-//                    if (!thresholdService2Reached && value != null && value > thresholdService2) {
-//                        toast("Magnetic Field value $value exceeds threshold $thresholdService2")
-//                        thresholdService2Reached = true
-//                    }
             }
             backgroundService.magneticValue.observe(this@MainActivity) { value ->
-                if (value != null){
-                    binding.magnetic.text = "Magneto:\n${value[0]}\n${value[1]}\n${value[2]}"
-                }
+                binding.magnetic.text = "Magneto:\n${value[0]}\n${value[1]}\n${value[2]}"
             }
 
             backgroundService.accelerationValue.observe(this@MainActivity) { value ->
-                if (value != null){
-                    binding.accelero.text = "Accelero:\n${value[0]}\n${value[1]}\n${value[2]}"
-                }
+                binding.accelero.text = "Accelero:\n${value[0]}\n${value[1]}\n${value[2]}"
             }
-
-
-
-
-
-
         }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-            // Do nothing
-
-        }
+        override fun onServiceDisconnected(name: ComponentName?) {}
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,14 +83,12 @@ class MainActivity : AppCompatActivity() {
         window.statusBarColor = toolbarColour
 
 
-        val serviceIntent = Intent(this, BackgroundService::class.java)
+        val serviceIntent = Intent(this@MainActivity, BackgroundService::class.java)
         startService(serviceIntent)
         bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE)
 
         binding.periodButton.setOnClickListener {
-
             backgroundService.modifyVariable(binding.periodInput.text.toString().toLong())
-
         }
 
         binding.ThresholdButton1.setOnClickListener {
