@@ -1,4 +1,3 @@
 <resources>
-    <string name="app_name">PeriodicSensorReading</string>
-    <string name="TooltipText">Example Text</string>
+    <string name="app_name">BroadcastTest</string>
 </resources>

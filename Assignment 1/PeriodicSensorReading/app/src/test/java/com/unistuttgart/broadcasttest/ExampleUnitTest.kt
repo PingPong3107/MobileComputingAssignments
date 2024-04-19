@@ -1,4 +1,4 @@
-package com.unistuttgart.periodicsensorreading
+package com.unistuttgart.broadcasttest
 
 import org.junit.Test
 

@@ -1,20 +1,27 @@
-package com.unistuttgart.periodicsensorreading
+package com.unistuttgart.broadcasttest
 
 import android.app.Service
 import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Binder
 import android.os.IBinder
+import android.os.Looper
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import java.util.Timer
 import java.util.TimerTask
+private val thresholdBroadcast = ThresholdBroadcast()
 
-
-class SensorListener: Service() {
+class BackgroundService: Service() {
+    private val binder = LocalBinder()
     private lateinit var timer: Timer
+    private var period: Long = 1000
+
     private lateinit var sensorManager: SensorManager
     private lateinit var lightSensor: Sensor
     private lateinit var magneticSensor: Sensor
@@ -46,7 +53,21 @@ class SensorListener: Service() {
         }
     }
 
-    override fun onBind(intent: Intent?): IBinder {
+
+    inner class LocalBinder : Binder() {
+        fun getService(): BackgroundService = this@BackgroundService
+    }
+
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            thresholdBroadcast, IntentFilter(ACTION_THRESHOLD_REACHED)
+        )
+//        val broadcastIntent = Intent(ACTION_THRESHOLD_REACHED)
+//        broadcastIntent.putExtra("event", "Startup")
+//        broadcastIntent.putExtra("value", "Service started")
+//        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent)
+
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)!!
         magneticSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)!!
@@ -54,12 +75,21 @@ class SensorListener: Service() {
         sensorManager.registerListener(sensorEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
         sensorManager.registerListener(sensorEventListener, magneticSensor, SensorManager.SENSOR_DELAY_NORMAL)
         sensorManager.registerListener(sensorEventListener, acceleroSensor, SensorManager.SENSOR_DELAY_NORMAL)
-        startTimer(1000)
-        return LocalBinder()
+
+
+        startTimer()
+        return super.onStartCommand(intent, flags, startId)
+    }
+    override fun onBind(intent: Intent?): IBinder {
+        return binder
     }
 
+    fun modifyVariable(newValue: Long) {
+        period = newValue
+        startTimer()
+    }
 
-    fun startTimer(period: Long) {
+    private fun startTimer() {
         if (::timer.isInitialized) {
             timer.cancel()
         }
@@ -96,8 +126,7 @@ class SensorListener: Service() {
         return returnValue
     }
 
-    inner class LocalBinder : Binder() {
-        // Return this instance of LocalService so clients can call public methods.
-        fun getService(): SensorListener = this@SensorListener
+    companion object {
+        const val ACTION_THRESHOLD_REACHED = "ACTION_THRESHOLD_REACHED"
     }
 }

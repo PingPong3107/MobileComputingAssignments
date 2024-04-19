@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.unistuttgart.periodicsensorreading"
+    namespace = "com.unistuttgart.broadcasttest"
     compileSdk = 34
 
     buildFeatures {
@@ -12,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.unistuttgart.periodicsensorreading"
+        applicationId = "com.unistuttgart.broadcasttest"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -49,4 +49,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.work.runtime.ktx)
 }

@@ -14,8 +14,6 @@
         android:background="@color/dark_cyan"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
-        android:tooltipText="@string/TooltipText"
-        tools:ignore="UnusedAttribute"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -140,7 +138,7 @@
             android:text="TextView" />
     </GridLayout>
 
-    <com.unistuttgart.periodicsensorreading.CircleWithLineView
+    <com.unistuttgart.broadcasttest.CircleWithLineView
         android:id="@+id/circleView"
         android:layout_width="200dp"
         android:layout_height="200dp"
@@ -150,5 +148,6 @@
 
 
         />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

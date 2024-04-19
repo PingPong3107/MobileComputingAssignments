@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PeriodicSensorReading"
+rootProject.name = "BroadcastTest"
 include(":app")
  
