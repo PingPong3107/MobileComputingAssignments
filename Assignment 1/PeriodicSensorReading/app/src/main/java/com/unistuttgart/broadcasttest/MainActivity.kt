@@ -18,10 +18,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var backgroundService: BackgroundService
-    private var thresholdService1: Float = 100000.0f
-    private var thresholdService2: Float = 100000.0f
-    private var thresholdService1Reached= false
-    private var thresholdService2Reached= false
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as BackgroundService.LocalBinder
@@ -29,33 +25,11 @@ class MainActivity : AppCompatActivity() {
 
             backgroundService.lightValue.observe(this@MainActivity) { value ->
                 binding.light.text = "Light: $value"
-                if (!thresholdService1Reached && value > thresholdService1) {
-                    thresholdService1Reached = true
-                    val intent = Intent(ACTION_THRESHOLD_REACHED)
-                    intent.putExtra("sensor", "Light")
-                    intent.putExtra("value", value)
-                    intent.putExtra("threshold", thresholdService1)
-                    sendBroadcast(intent)
-                } else if(value < thresholdService1){
-                    thresholdService1Reached = false
-                }
-
             }
             backgroundService.compassAngle.observe(this@MainActivity) { value ->
                 val angle = (value + 360) % 360
                 binding.compass.text = "Orientation: ${Math.round(angle)}°"
                 binding.circleView.setAngle(angle.toFloat())
-                if(!thresholdService2Reached && angle > thresholdService2){
-                    thresholdService2Reached = true
-                    val intent = Intent(ACTION_THRESHOLD_REACHED)
-                    intent.putExtra("sensor", "Angle")
-                    intent.putExtra("value", angle.toFloat())
-                    intent.putExtra("threshold", thresholdService2)
-                    sendBroadcast(intent)
-                } else if(angle < thresholdService2){
-                    thresholdService2Reached = false
-                }
-
             }
             backgroundService.magneticValue.observe(this@MainActivity) { value ->
                 binding.magnetic.text = "Magneto:\n${value[0]}\n${value[1]}\n${value[2]}"
@@ -92,13 +66,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.ThresholdButton1.setOnClickListener {
-            thresholdService1 = binding.ThresholdInput1.text.toString().toFloat()
-            thresholdService1Reached = false
+            backgroundService.thresholdService1 = binding.ThresholdInput1.text.toString().toFloat()
+            backgroundService.thresholdService1Reached = false
         }
 
         binding.ThresholdButton2.setOnClickListener {
-            thresholdService2 = binding.ThresholdInput2.text.toString().toFloat()
-            thresholdService2Reached = false
+            backgroundService.thresholdService2 = binding.ThresholdInput2.text.toString().toFloat()
+            backgroundService.thresholdService2Reached = false
         }
     }
 

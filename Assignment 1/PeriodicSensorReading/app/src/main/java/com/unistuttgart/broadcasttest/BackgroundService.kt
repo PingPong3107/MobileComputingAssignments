@@ -35,6 +35,11 @@ class BackgroundService: Service() {
 
     var compassAngle: MutableLiveData<Double> = MutableLiveData()
 
+    var thresholdService1: Float = 100000.0f
+    var thresholdService2: Float = 100000.0f
+    var thresholdService1Reached= false
+    var thresholdService2Reached= false
+
     private val sensorEventListener = object : SensorEventListener {
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
@@ -90,6 +95,34 @@ class BackgroundService: Service() {
                     magneticValue.postValue(currentMagneticValue)
                     accelerationValue.postValue(currentAccelerationValue)
                     compassAngle.postValue(compass())
+
+                    if (lightValue.value != null){
+                        if (!thresholdService1Reached && lightValue.value!! > thresholdService1) {
+                            thresholdService1Reached = true
+                            val intent = Intent(ACTION_THRESHOLD_REACHED)
+                            intent.putExtra("sensor", "Light")
+                            intent.putExtra("value", lightValue.value)
+                            intent.putExtra("threshold", thresholdService1)
+                            sendBroadcast(intent)
+                        } else if(lightValue.value!! < thresholdService1){
+                            thresholdService1Reached = false
+                        }
+                    }
+
+                    if (compassAngle.value != null){
+                        val angle = (compassAngle.value!! + 360) % 360
+                        if(!thresholdService2Reached && angle > thresholdService2){
+                            thresholdService2Reached = true
+                            val intent = Intent(ACTION_THRESHOLD_REACHED)
+                            intent.putExtra("sensor", "Angle")
+                            intent.putExtra("value", angle.toFloat())
+                            intent.putExtra("threshold", thresholdService2)
+                            sendBroadcast(intent)
+                        } else if(angle < thresholdService2){
+                            thresholdService2Reached = false
+                        }
+                    }
+
                 }
             }, 0, period)
         }

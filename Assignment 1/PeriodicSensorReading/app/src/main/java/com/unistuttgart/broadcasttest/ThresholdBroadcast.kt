@@ -16,6 +16,7 @@ class ThresholdBroadcast: BroadcastReceiver(){
             val threshold = intent.getFloatExtra("threshold", 0.0f)
             val message = "$sensor with value $value exceeded threshold $threshold"
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            println("Konsequenzen")
         }
     }
 }
