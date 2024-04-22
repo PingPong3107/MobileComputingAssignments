@@ -14,21 +14,32 @@ import android.content.ContentValues
 import android.os.Build
 import android.provider.MediaStore
 
+/**
+ * The main activity of the calculator app
+ */
 class MainActivity : AppCompatActivity() {
 
+    // View binding for the activity
     private lateinit var binding: ActivityMainBinding
 
+    /**
+     * Create the activity and set up the UI
+     * @param savedInstanceState the saved instance state
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Set padding to account for system bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
+        //Apply color of toolbar to status bar
         setSupportActionBar(binding.toolbar)
         val toolbarColour = (binding.toolbar.background as ColorDrawable).color
         window.statusBarColor = toolbarColour
@@ -36,6 +47,10 @@ class MainActivity : AppCompatActivity() {
         setupClickListeners()
     }
 
+    /**
+     * Set up click listeners for all buttons
+     * and append the corresponding value to the input field
+     */
     private fun setupClickListeners() {
         val buttonMap = mapOf(
             binding.one to getString(R.string._1),
@@ -57,6 +72,7 @@ class MainActivity : AppCompatActivity() {
             binding.dot to getString(R.string.Dot)
         )
 
+        // Set up click listeners for all buttons
         buttonMap.forEach { (button, value) ->
             button.setOnClickListener {
                 binding.textView.append(value)
@@ -66,6 +82,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Set up click listener for the delete button
         binding.del.setOnClickListener {
             binding.textView.text = binding.textView.text.dropLast(1).toString()
             binding.inputScrollView.post {
@@ -73,11 +90,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Set up long click listener for the delete button
         binding.del.setOnLongClickListener {
             binding.textView.text = ""
             true
         }
 
+        // Set up click listener for the equals button
         binding.equals.setOnClickListener {
             val expression = binding.textView.text.toString()
             val calculator = Calculation()
@@ -91,8 +110,8 @@ class MainActivity : AppCompatActivity() {
             }
             else{
                 // remove pointless ".0"
-                if (result.contains(".") && result.split(".")[1] == "0") {
-                    result = result.split(".")[0]
+                if (result.endsWith(".0")) {
+                    result = result.dropLast(2)
                 }
 
                 val historyLines = binding.history.text.split("\n").toMutableList()
@@ -114,6 +133,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
+        // Set up click listener for the save button
         binding.save.setOnClickListener {
             val history = binding.history.text.toString()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -131,15 +151,27 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Set up easter egg long click listener for the save button
         binding.save.setOnLongClickListener {
             toast("Matthias Künzer")
             true
         }
     }
 
+    /**
+     * Display a toast with the given message
+     * @param message the message to display
+     */
     private fun toast(message: CharSequence)=
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 
+    /**
+     * Check for easter eggs in the expression and result
+     * and display a toast if one is found
+     * @param expression the expression to check
+     * @param result the result to check
+     * @return a toast with the easter egg if one is found
+     */
     private fun easterEggs(expression: String, result: String){
         when (result){
             "0" -> toast("Null? NULL!")
