@@ -15,6 +15,9 @@ import java.util.Timer
 import java.util.TimerTask
 private val thresholdBroadcast = ThresholdBroadcast()
 
+/**
+ * Background service that reads sensor values and broadcasts threshold events.
+ */
 class BackgroundService: Service() {
     private val binder = LocalBinder()
     private lateinit var timer: Timer
@@ -40,9 +43,19 @@ class BackgroundService: Service() {
     var thresholdService1Reached= false
     var thresholdService2Reached= false
 
+    // Broadcast receiver that listens for threshold events and shows a toast message.
     private val sensorEventListener = object : SensorEventListener {
+        /**
+         * Not used.
+         * @see SensorEventListener.onAccuracyChanged
+         */
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
+        /**
+         * Update the sensor values when a sensor event occurs.
+         * @param event The sensor event that occurred.
+         * @see SensorEventListener.onSensorChanged
+         */
         override fun onSensorChanged(event: SensorEvent?) {
             event?.let {
                 when (it.sensor.type) {
@@ -54,11 +67,20 @@ class BackgroundService: Service() {
         }
     }
 
+    // Binder class that allows clients to access the service.
     inner class LocalBinder : Binder() {
         fun getService(): BackgroundService = this@BackgroundService
     }
 
 
+    /**
+     * Register the threshold broadcast receiver when the service is started.
+     * @param intent The intent that started the service.
+     * @param flags Additional data about the service start request.
+     * @param startId A unique integer representing the start request.
+     * @return The service start type.
+     * @see Service.onStartCommand
+     */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         LocalBroadcastManager.getInstance(this).registerReceiver(
             thresholdBroadcast, IntentFilter(ACTION_THRESHOLD_REACHED)
@@ -75,15 +97,30 @@ class BackgroundService: Service() {
         startTimer()
         return super.onStartCommand(intent, flags, startId)
     }
+
+    /**
+     * Bind the service to the client.
+     * @param intent The intent that started the service.
+     * @return The binder object.
+     * @see Service.onBind
+     */
     override fun onBind(intent: Intent?): IBinder {
         return binder
     }
 
+    /**
+     * Modify the timer period and restart the timer.
+     * @param newValue The new timer period.
+     */
     fun modifyVariable(newValue: Long) {
         period = newValue
         startTimer()
     }
 
+    /**
+     * Start the timer. The timer reads sensor values and broadcasts threshold events.
+     * @see Timer.scheduleAtFixedRate
+     */
     private fun startTimer() {
         if (::timer.isInitialized) {
             timer.cancel()
@@ -128,6 +165,10 @@ class BackgroundService: Service() {
         }
     }
 
+    /**
+     * Calculate the compass angle based on the current acceleration and magnetic values.
+     * @return The compass angle in degrees.
+     */
     fun compass(): Double{
         val identityMatrix = FloatArray(9)
         val rotationMatrix = FloatArray(9)
@@ -144,6 +185,7 @@ class BackgroundService: Service() {
         return 0.0
     }
 
+    // Broadcast receiver that listens for threshold events and shows a toast message.
     companion object {
         const val ACTION_THRESHOLD_REACHED = "ACTION_THRESHOLD_REACHED"
     }
