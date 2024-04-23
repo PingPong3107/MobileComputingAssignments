@@ -10,6 +10,7 @@ import de.unistuttgart.weatherapp.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var bluetoothScanner: BluetoothScanner
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,5 +25,7 @@ class MainActivity : AppCompatActivity() {
         //Apply color of toolbar to status bar
         setSupportActionBar(binding.toolbar)
         window.statusBarColor = (binding.toolbar.background as ColorDrawable).color
+
+        bluetoothScanner = BluetoothScanner(this@MainActivity)
     }
 }
