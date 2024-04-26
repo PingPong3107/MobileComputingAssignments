@@ -7,6 +7,10 @@ android {
     namespace = "com.unistuttgart.weatherapp"
     compileSdk = 34
 
+    buildFeatures {
+        viewBinding = true
+    }
+
     defaultConfig {
         applicationId = "com.unistuttgart.weatherapp"
         minSdk = 24
