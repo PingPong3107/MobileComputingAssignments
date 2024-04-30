@@ -1,11 +1,8 @@
 package com.unistuttgart.weatherapp
 
-import android.bluetooth.BluetoothAdapter
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -19,7 +16,8 @@ import androidx.core.app.ActivityCompat
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private val BLUETOOTH_PERMISSIONS_REQUEST_CODE = 69420
+    private val bluetoothPermissionRequestCode = 69420
+    private lateinit var bluetoothScanner: BluetoothScanner
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,11 +32,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         checkBluetoothPermissions()
+        bluetoothScanner = BluetoothScanner(this)
+        bluetoothScanner.startScan()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == BLUETOOTH_PERMISSIONS_REQUEST_CODE) {
+        if (requestCode == bluetoothPermissionRequestCode) {
+
             if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 Toast.makeText(this, "Bluetooth permissions granted", Toast.LENGTH_SHORT).show()
                 // All Bluetooth permissions have been granted
@@ -57,14 +58,11 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT),
-                BLUETOOTH_PERMISSIONS_REQUEST_CODE
+                bluetoothPermissionRequestCode
             )
         } else {
             Toast.makeText(this, "Bluetooth permissions already granted", Toast.LENGTH_SHORT).show()
             // Permissions already granted - you can initiate Bluetooth scanning and connecting here
         }
     }
-
-
-
 }
