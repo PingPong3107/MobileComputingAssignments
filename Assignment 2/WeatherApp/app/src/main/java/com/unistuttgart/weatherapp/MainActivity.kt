@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         checkBluetoothPermissions()
-        bluetoothScanner = BluetoothScanner(this)
+        bluetoothScanner = BluetoothScanner(this, binding)
         bluetoothScanner.startScan()
     }
 
