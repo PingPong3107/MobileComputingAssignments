@@ -1,6 +1,7 @@
 package com.unistuttgart.betterweatherscanner
 
 import android.content.Context
+import android.content.res.Configuration
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,10 +20,20 @@ class DeviceAdapter(context: Context, private val resource: Int, private val ite
         val item = getItem(position)
         textView.text = item
 
-        if (item?.contains("F6:B6:2A:79:7B:5D") == true) {
+
+        val nightModeFlags = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+
+
+        if (item?.contains("IPVS") == true){
             textView.setTextColor(context.getColor(R.color.red))  // Ensure you have a color defined in your colors.xml
         } else {
-            textView.setTextColor(context.getColor(R.color.white)) // Default color
+            if (nightModeFlags == Configuration.UI_MODE_NIGHT_YES) {
+                // Night mode is active, we're using dark theme
+                textView.setTextColor(context.getColor(R.color.white))
+            } else {
+                // Not night mode, we're using day/light theme
+                textView.setTextColor(context.getColor(R.color.black))
+            }
         }
 
         return view
