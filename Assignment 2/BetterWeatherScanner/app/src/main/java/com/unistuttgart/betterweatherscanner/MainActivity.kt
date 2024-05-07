@@ -6,11 +6,15 @@ import android.bluetooth.le.ScanResult
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ListView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 
 @SuppressLint("MissingPermission")
 class MainActivity : AppCompatActivity() {
@@ -50,11 +54,37 @@ class MainActivity : AppCompatActivity() {
         listView.setOnItemClickListener { _, _, position, _ ->
             val deviceAddress = devices[position].substringAfter("(").substringBefore(")")
             val device = bluetoothManager.bluetoothAdapter.getRemoteDevice(deviceAddress)
+            //openFragment(WeatherConnectionFragment.newInstance())
             bluetoothManager.connectToDevice(this, device)
         }
 
         checkPermissions()
     }
+
+    private fun openFragment(fragment: Fragment) {
+        listView.visibility = View.GONE
+        findViewById<Button>(R.id.scanButton).visibility = View.GONE
+        findViewById<FrameLayout>(R.id.fragmentContainer).visibility = View.VISIBLE
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    @Suppress("DEPRECATION")
+    @Deprecated("This method is deprecated, but I just don't care!")
+    override fun onBackPressed() {
+        val fragmentContainer: FrameLayout = findViewById(R.id.fragmentContainer)
+        if (fragmentContainer.visibility == View.VISIBLE) {
+            fragmentContainer.visibility = View.GONE
+            listView.visibility = View.VISIBLE
+            findViewById<Button>(R.id.scanButton).visibility = View.VISIBLE
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+
 
     private fun checkPermissions() {
         val requiredPermissions = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {

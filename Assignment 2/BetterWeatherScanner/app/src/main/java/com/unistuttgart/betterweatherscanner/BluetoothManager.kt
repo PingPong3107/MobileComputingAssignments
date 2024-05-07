@@ -11,10 +11,12 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 
 @SuppressLint("MissingPermission")
 class BluetoothManager(context: Context, private val scanCallback: ScanCallback) {
@@ -73,30 +75,36 @@ class BluetoothManager(context: Context, private val scanCallback: ScanCallback)
             }
         }
 
-
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
+                /**
                 handler.post {
                     Toast.makeText(context, "GATT Services Discovered.", Toast.LENGTH_SHORT).show()
                 }
+                */
                 gatt?.services?.forEach { service ->
+                    /**
                     handler.post {
                         Toast.makeText(context, "Service UUID: ${service.uuid}", Toast.LENGTH_SHORT).show()
                     }
+                    */
 
                     service.characteristics.forEach { characteristic ->
-                        handler.post{
+                        /**handler.post{
                             Toast.makeText(context, "Characteristic UUID: ${characteristic.uuid}", Toast.LENGTH_SHORT).show()
                         }
 
 
+                        handler.post{
+                            Toast.makeText(context, "Characteristic Properties: ${((characteristic.properties and BluetoothGattCharacteristic.PROPERTY_READ) != 0) }", Toast.LENGTH_SHORT).show()
+                        }
+                        */
+
 
                         if ((characteristic.properties and BluetoothGattCharacteristic.PROPERTY_READ) != 0) {
-                            handler.post{
-                                Toast.makeText(context, "Characteristic is readable", Toast.LENGTH_SHORT).show()
-                            }
                             gatt.readCharacteristic(characteristic)
                         }
+
 
                         // Subscribe if the characteristic supports notifications
                         if ((characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) {
@@ -111,22 +119,43 @@ class BluetoothManager(context: Context, private val scanCallback: ScanCallback)
             }
         }
 
+        override fun onCharacteristicChanged(
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic,
+            value: ByteArray
+        ) {
+
+            handler.post {
+                Toast.makeText(context, "Characteristic Changed: $value", Toast.LENGTH_SHORT).show()
+            }
+
+        }
+
+
+
+        @SuppressLint("NewApi")
+        @Suppress("DEPRECATION")
+        @Deprecated(
+            "Used natively in Android 12 and lower",
+            ReplaceWith("onCharacteristicRead(gatt, characteristic, characteristic.value, status)")
+        )
+        override fun onCharacteristicRead(
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic,
+            status: Int
+        ) = onCharacteristicRead(gatt, characteristic, characteristic.value, status)
+
+
         override fun onCharacteristicRead(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,
             value: ByteArray,
             status: Int
         ) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                handler.post {
-                    Toast.makeText(context, "Characteristic Read: $value", Toast.LENGTH_SHORT).show()
-                }
+            handler.post {
+                Toast.makeText(context, "Characteristic Read: ${value.contentToString()}", Toast.LENGTH_SHORT).show()
             }
         }
-
-
-
-
     }
 
     fun disconnect() {
