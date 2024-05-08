@@ -10,7 +10,6 @@ import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ListView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -31,11 +30,18 @@ class MainActivity : AppCompatActivity() {
         adapter = DeviceAdapter(this, android.R.layout.simple_list_item_1, devices)
         listView.adapter = adapter
 
-        val button: Button = findViewById(R.id.scanButton)
-        button.setOnClickListener {
+        val scanButton: Button = findViewById(R.id.scanButton)
+        scanButton.setOnClickListener {
             bluetoothManager.scanLeDevice(!bluetoothManager.isScanning)
-            button.text= if (bluetoothManager.isScanning) "Stop Scanning" else "Start Scanning"
+            scanButton.text= if (bluetoothManager.isScanning) "Stop Scanning" else "Start Scanning"
         }
+
+        val disconnectButton: Button = findViewById(R.id.disconnectButton)
+        disconnectButton.setOnClickListener {
+            bluetoothManager.disconnect()
+        }
+
+
 
         bluetoothManager = BluetoothManager(this, object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
