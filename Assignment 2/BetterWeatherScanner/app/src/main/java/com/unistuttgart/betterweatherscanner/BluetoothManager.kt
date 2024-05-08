@@ -17,10 +17,18 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 @SuppressLint("MissingPermission")
 class BluetoothManager(context: Context, private val scanCallback: ScanCallback) {
     private val handler = Handler(Looper.getMainLooper())
+    val gattServiceNames = mapOf(
+        "00002a6f-0000-1000-8000-00805f9b34fb" to "Humidity",
+        "00002a1c-0000-1000-8000-00805f9b34fb" to "Temperature",
+    )
+
+
     val bluetoothAdapter: BluetoothAdapter by lazy {
         (context.getSystemService(Context.BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager).adapter
     }
@@ -44,6 +52,7 @@ class BluetoothManager(context: Context, private val scanCallback: ScanCallback)
                 isScanning = true
                 bluetoothLeScanner.startScan(scanCallback)
             }
+
             else -> {
                 isScanning = false
                 bluetoothLeScanner.stopScan(scanCallback)
@@ -62,14 +71,20 @@ class BluetoothManager(context: Context, private val scanCallback: ScanCallback)
                 BluetoothProfile.STATE_CONNECTED -> {
                     Log.i("BluetoothGattCallback", "Connected to GATT server.")
                     handler.post {
-                        Toast.makeText(context, "Connected to GATT server.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Connected to GATT server.", Toast.LENGTH_SHORT)
+                            .show()
                     }
                     gatt?.discoverServices()
                 }
+
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     Log.i("BluetoothGattCallback", "Disconnected from GATT server.")
                     handler.post {
-                        Toast.makeText(context, "Disconnected from GATT server.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Disconnected from GATT server.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
@@ -77,60 +92,62 @@ class BluetoothManager(context: Context, private val scanCallback: ScanCallback)
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                /**
-                handler.post {
-                    Toast.makeText(context, "GATT Services Discovered.", Toast.LENGTH_SHORT).show()
-                }
-                */
                 gatt?.services?.forEach { service ->
-                    /**
-                    handler.post {
-                        Toast.makeText(context, "Service UUID: ${service.uuid}", Toast.LENGTH_SHORT).show()
-                    }
-                    */
 
-                    service.characteristics.forEach { characteristic ->
-                        /**handler.post{
-                            Toast.makeText(context, "Characteristic UUID: ${characteristic.uuid}", Toast.LENGTH_SHORT).show()
-                        }
+                    if (service.uuid.toString() == "00000002-0000-0000-fdfd-fdfdfdfdfdfd") {
+                        service.characteristics.forEach { characteristic ->
 
+                            if (gattServiceNames.containsKey(characteristic.uuid.toString())) {
+                                when (gattServiceNames[characteristic.uuid.toString()]) {
+                                    "Temperature" -> {
+                                        gatt.readCharacteristic(characteristic)
+                                    }
 
-                        handler.post{
-                            Toast.makeText(context, "Characteristic Properties: ${((characteristic.properties and BluetoothGattCharacteristic.PROPERTY_READ) != 0) }", Toast.LENGTH_SHORT).show()
-                        }
-                        */
-
-
-                        if ((characteristic.properties and BluetoothGattCharacteristic.PROPERTY_READ) != 0) {
-                            gatt.readCharacteristic(characteristic)
-                        }
-
-
-                        // Subscribe if the characteristic supports notifications
-                        if ((characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) {
-                            gatt.setCharacteristicNotification(characteristic, true)
+                                    "Humidity" -> {
+                                        gatt.readCharacteristic(characteristic)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             } else {
-                handler.post{
-                    Toast.makeText(context, "onServicesDiscovered received: $status", Toast.LENGTH_SHORT).show()
+                handler.post {
+                    Toast.makeText(
+                        context,
+                        "onServicesDiscovered received: $status",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
+
+
+        @SuppressLint("NewApi")
+        @Suppress("DEPRECATION")
+        @Deprecated(
+            "Used natively in Android 12 and lower",
+            ReplaceWith("onCharacteristicChanged(gatt, characteristic, characteristic.value)")
+        )
+        override fun onCharacteristicChanged(
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic
+        ) = onCharacteristicChanged(gatt, characteristic, characteristic.value)
+
 
         override fun onCharacteristicChanged(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,
             value: ByteArray
         ) {
-
             handler.post {
-                Toast.makeText(context, "Characteristic Changed: $value", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "Characteristic Changed: ${decodeTemperatureMeasurement(value)}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-
         }
-
 
 
         @SuppressLint("NewApi")
@@ -152,11 +169,31 @@ class BluetoothManager(context: Context, private val scanCallback: ScanCallback)
             value: ByteArray,
             status: Int
         ) {
-            handler.post {
-                Toast.makeText(context, "Characteristic Read: ${value.contentToString()}", Toast.LENGTH_SHORT).show()
+            handler.post { Toast.makeText(context, "Characteristic: ${gattServiceNames[characteristic.uuid.toString()]}", Toast.LENGTH_SHORT).show()}
+            when (gattServiceNames[characteristic.uuid.toString()]) {
+                "Temperature" -> {
+                    handler.post {
+                        Toast.makeText(
+                            context,
+                            "Temperature: ${decodeTemperatureMeasurement(value)}°C",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+                "Humidity" -> {
+                    handler.post {
+                        Toast.makeText(
+                            context,
+                            "Humidity: ${decodeHumidityMeasurement(value)}%",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             }
         }
     }
+
 
     fun disconnect() {
         bluetoothGatt?.disconnect()
@@ -165,5 +202,36 @@ class BluetoothManager(context: Context, private val scanCallback: ScanCallback)
     fun close() {
         bluetoothGatt?.close()
         bluetoothGatt = null
+    }
+
+
+    fun decodeTemperatureMeasurement(data: ByteArray): Double {
+        val buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN)
+
+        // Read flags
+        val flags = buffer.get()
+        val a = buffer.get()
+        val b = buffer.get()
+        val c = buffer.get()
+        val d = buffer.get()
+
+        val test = ByteArray(3)
+        buffer.get(test,1,4)
+
+        val hexString =
+            byteArrayOf(c, b, a).joinToString("") { it.toUByte().toString(16).padStart(2, '0') }
+        return hexString.toInt(16) / 100.0
+    }
+
+
+
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun decodeHumidityMeasurement(data: ByteArray): Double {
+        val buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN)
+
+        val a = buffer.get()
+        val b = buffer.get()
+        val hexString = byteArrayOf(b, a).joinToString("") { it.toUByte().toString(16).padStart(2, '0') }
+        return hexString.toDouble()
     }
 }
