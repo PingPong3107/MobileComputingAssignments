@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 
-class DeviceAdapter(context: Context, private val resource: Int, private val items: List<String>)
+class DeviceAdapter(context: Context, private val resource: Int, items: List<String>)
     : ArrayAdapter<String>(context, resource, items) {
 
     private val inflater: LayoutInflater = LayoutInflater.from(context)
@@ -16,13 +16,9 @@ class DeviceAdapter(context: Context, private val resource: Int, private val ite
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = convertView ?: inflater.inflate(resource, parent, false)
         val textView = view.findViewById<TextView>(android.R.id.text1)
-
         val item = getItem(position)
         textView.text = item
-
-
         val nightModeFlags = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-
 
         if (item?.contains("IPVS") == true){
             textView.setTextColor(context.getColor(R.color.red))  // Ensure you have a color defined in your colors.xml
@@ -35,7 +31,6 @@ class DeviceAdapter(context: Context, private val resource: Int, private val ite
                 textView.setTextColor(context.getColor(R.color.black))
             }
         }
-
         return view
     }
 }
