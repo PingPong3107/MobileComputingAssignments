@@ -25,12 +25,18 @@ class ByteArrayDecoder {
         return ret
     }
 
-     fun decodeHumidityMeasurement(data: ByteArray): Double {
+     fun decodeHumidityMeasurement(data: ByteArray): Int {
         val buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN)
 
         val a = buffer.get()
         val b = buffer.get()
-        val hexString = byteArrayOf(b, a).joinToString("") { it.toUByte().toString(16).padStart(2, '0') }
-        return 0.0
+         return ((b.toInt() and 0xFF) shl 8) or (a.toInt() and 0xFF)
+    }
+
+    private fun uint16ToBytes(value: Int): ByteArray {
+        return byteArrayOf(
+            (value and 0xFF).toByte(),
+            ((value shr 8) and 0xFF).toByte()
+        )
     }
 }

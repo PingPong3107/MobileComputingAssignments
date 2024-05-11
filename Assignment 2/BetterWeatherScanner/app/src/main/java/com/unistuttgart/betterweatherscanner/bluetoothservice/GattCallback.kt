@@ -6,24 +6,42 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothProfile
+import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import com.unistuttgart.betterweatherscanner.BuildConfig
 import com.unistuttgart.betterweatherscanner.ByteArrayDecoder
 import java.util.UUID
+import kotlinx.coroutines.Runnable
 
 @SuppressLint("MissingPermission")
-class GattCallback: BluetoothGattCallback(){
-
+class GattCallback (private val context: Context): BluetoothGattCallback(){
     private var characteristicQueue = mutableListOf<Runnable>()
     private var byteArrayDecoder = ByteArrayDecoder()
+    var humidityCharacteristic: BluetoothGattCharacteristic? = null
+    var temperatureCharacteristic: BluetoothGattCharacteristic? = null
+    var lightCharacteristic: BluetoothGattCharacteristic? = null
+
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         when (newState) {
             BluetoothProfile.STATE_CONNECTED -> {
-                Log.i(BuildConfig.LOG_TAG, "Connected to GATT server.")
+
+                val intent = Intent(CONNECTSTATUS)
+                intent.putExtra("address", gatt?.device?.address)
+                intent.putExtra("status", "Connected")
+                context.sendBroadcast(intent)
                 gatt?.discoverServices()
             }
             BluetoothProfile.STATE_DISCONNECTED -> {
-                Log.i(BuildConfig.LOG_TAG, "Disconnected from GATT server.")
+                humidityCharacteristic = null
+                temperatureCharacteristic = null
+                lightCharacteristic = null
+                val intent = Intent(CONNECTSTATUS)
+                intent.putExtra("address", gatt?.device?.address)
+                intent.putExtra("status", "Disconnected")
+                context.sendBroadcast(intent)
             }
         }
     }
@@ -35,11 +53,12 @@ class GattCallback: BluetoothGattCallback(){
                 if (service.uuid.toString() == BuildConfig.WEATHER_SERVICE_UUID || service.uuid.toString() == BuildConfig.LIGHT_SERVICE_UUID){
                     for (characteristic in service.characteristics){
                         if (characteristic.uuid.toString() == BuildConfig.TEMPERATURE_CHARACTERISTIC_UUID){
-                            Log.i(BuildConfig.LOG_TAG, "Temperature characteristic found")
-                            characteristicQueue.add(kotlinx.coroutines.Runnable {
+                            temperatureCharacteristic = characteristic
+                            /**
+                            characteristicQueue.add(Runnable {
                                 gatt.readCharacteristic(characteristic)
                             })
-                            characteristicQueue.add(kotlinx.coroutines.Runnable {
+                            characteristicQueue.add(Runnable {
                                 gatt.setCharacteristicNotification(characteristic, true)
                                 val descriptor = characteristic.getDescriptor(
                                     UUID.fromString(
@@ -49,14 +68,15 @@ class GattCallback: BluetoothGattCallback(){
                                 descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                                 gatt.writeDescriptor(descriptor)
                             })
+                                */
 
                         }
                         if (characteristic.uuid.toString() == BuildConfig.HUMIDITY_CHARACTERISTIC_UUID){
-                            Log.i(BuildConfig.LOG_TAG, "Humidity characteristic found")
-                            characteristicQueue.add(kotlinx.coroutines.Runnable {
+                            humidityCharacteristic = characteristic
+                            characteristicQueue.add(Runnable {
                                 gatt.readCharacteristic(characteristic)
                             })
-                            characteristicQueue.add(kotlinx.coroutines.Runnable {
+                            characteristicQueue.add(Runnable {
                                 gatt.setCharacteristicNotification(characteristic, true)
                                 val descriptor = characteristic.getDescriptor(
                                     UUID.fromString(
@@ -69,10 +89,19 @@ class GattCallback: BluetoothGattCallback(){
                             })
                         }
                         if (characteristic.uuid.toString() == BuildConfig.LIGHT_CHARACTERISTIC_UUID){
-                            Log.i(BuildConfig.LOG_TAG, "Light characteristic found")
-                            characteristicQueue.add(kotlinx.coroutines.Runnable {
-                                gatt.readCharacteristic(characteristic)
-                            })
+                            lightCharacteristic = characteristic
+                            /**
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+                                //gatt.writeCharacteristic(characteristic, byteArrayOf(0x01), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+                                Log.e(BuildConfig.LOG_TAG, "Android Version too new, not implemented")
+                            } else{
+                                characteristicQueue.add(Runnable {
+                                    characteristic.setValue(uint16ToBytes(1000))
+                                    gatt.writeCharacteristic(characteristic)
+                                })
+                            }
+                             */
                         }
                     }
                 }
@@ -100,11 +129,15 @@ class GattCallback: BluetoothGattCallback(){
     ) {
         if (characteristic.uuid.toString() == BuildConfig.TEMPERATURE_CHARACTERISTIC_UUID) {
             val temperature = byteArrayDecoder.decodeTemperatureMeasurement(value)
-            Log.i(BuildConfig.LOG_TAG, "Temperature changed: $temperature")
+            val intent = Intent(TEMPERATURE_CHANGE)
+            intent.putExtra("temperature", temperature.toString())
+            context.sendBroadcast(intent)
         }
         if (characteristic.uuid.toString() == BuildConfig.HUMIDITY_CHARACTERISTIC_UUID) {
             val humidity = byteArrayDecoder.decodeHumidityMeasurement(value)
-            Log.i(BuildConfig.LOG_TAG, "Humidity changed: $humidity")
+            val intent = Intent(HUMIDITY_CHANGE)
+            intent.putExtra("humidity", humidity.toString())
+            context.sendBroadcast(intent)
         }
 
         runNextCharacteristic()
@@ -132,15 +165,29 @@ class GattCallback: BluetoothGattCallback(){
     ) {
         if (characteristic.uuid.toString() == BuildConfig.TEMPERATURE_CHARACTERISTIC_UUID) {
             val temperature = byteArrayDecoder.decodeTemperatureMeasurement(value)
-            Log.i(BuildConfig.LOG_TAG, "Array: ${value.contentToString()}")
-            Log.i(BuildConfig.LOG_TAG, "Temperature: $temperature")
+            val intent = Intent(TEMPERATURE_CHANGE)
+            intent.putExtra("temperature", temperature.toString())
+            context.sendBroadcast(intent)
         }
         if (characteristic.uuid.toString() == BuildConfig.HUMIDITY_CHARACTERISTIC_UUID) {
             val humidity = byteArrayDecoder.decodeHumidityMeasurement(value)
-            Log.i(BuildConfig.LOG_TAG, "Humidity: $humidity")
+            val intent = Intent(HUMIDITY_CHANGE)
+            intent.putExtra("humidity", humidity.toString())
+            context.sendBroadcast(intent)
         }
         runNextCharacteristic()
     }
+
+    override fun onCharacteristicWrite(
+        gatt: BluetoothGatt?,
+        characteristic: BluetoothGattCharacteristic?,
+        status: Int
+    ) {
+        Log.i(BuildConfig.LOG_TAG, "Characteristic written with status $status")
+        runNextCharacteristic()
+    }
+
+
 
     private fun runNextCharacteristic() {
         if (characteristicQueue.isNotEmpty()) {
@@ -148,5 +195,18 @@ class GattCallback: BluetoothGattCallback(){
             firstRunnable.run()
             characteristicQueue.removeAt(0)
         }
+    }
+
+    fun uint16ToBytes(value: Int): ByteArray {
+        return byteArrayOf(
+            (value and 0xFF).toByte(),
+            ((value shr 8) and 0xFF).toByte()
+        )
+    }
+
+    companion object {
+        const val HUMIDITY_CHANGE = "ACTION_THRESHOLD_REACHED"
+        const val TEMPERATURE_CHANGE = "ACTION_TEMPERATURE_REACHED"
+        const val CONNECTSTATUS = "ACTION_CONNECT_STATUS"
     }
 }
