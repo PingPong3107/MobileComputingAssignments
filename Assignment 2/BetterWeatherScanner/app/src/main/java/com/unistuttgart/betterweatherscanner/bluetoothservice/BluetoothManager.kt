@@ -9,14 +9,14 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.unistuttgart.betterweatherscanner.BuildConfig
 import com.unistuttgart.betterweatherscanner.DeviceAdapter
 
 @SuppressLint("MissingPermission")
-class BluetoothManager(context: Context, adapter: DeviceAdapter, devices:MutableList<String>, private val characteristics: MutableLiveData<MutableList<BluetoothGattCharacteristic>>) {
+class BluetoothManager(private val context: Context, adapter: DeviceAdapter, devices:MutableList<String>) {
 
-    //var characteristics = mutableListOf<BluetoothGattCharacteristic>()
     private val scanCallback = ScanCallback(devices, adapter)
     var gattCallback = GattCallback(context)
     var bluetoothGatt: BluetoothGatt? = null
@@ -50,14 +50,20 @@ class BluetoothManager(context: Context, adapter: DeviceAdapter, devices:Mutable
     }
 
     fun connectToDevice(context: Context, device: BluetoothDevice) {
-        bluetoothGatt?.close()
+        close()
         bluetoothGatt = device.connectGatt(context, false, gattCallback)
         Log.i(BuildConfig.LOG_TAG, "Connecting to ${device.name}...")
+        Toast.makeText(context, "Connecting to ${device.name}...", Toast.LENGTH_SHORT).show()
     }
 
     fun disconnect() {
-        characteristics.postValue(emptyList<BluetoothGattCharacteristic>().toMutableList())
-        bluetoothGatt?.disconnect()
+        bluetoothGatt?.let { gatt ->
+            gatt.disconnect()
+            val intent = Intent(GattCallback.CONNECTSTATUS)
+            intent.putExtra("address", gatt.device.address)
+            intent.putExtra("status", "Disconnected")
+            context.sendBroadcast(intent)
+        }
     }
 
     fun close() {

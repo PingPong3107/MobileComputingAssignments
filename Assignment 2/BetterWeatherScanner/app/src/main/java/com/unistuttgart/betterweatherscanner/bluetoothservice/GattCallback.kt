@@ -4,21 +4,15 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import com.unistuttgart.betterweatherscanner.BuildConfig
 import com.unistuttgart.betterweatherscanner.ByteArrayDecoder
-import java.util.UUID
-import kotlinx.coroutines.Runnable
 
 @SuppressLint("MissingPermission")
 class GattCallback (private val context: Context): BluetoothGattCallback(){
-    private var characteristicQueue = mutableListOf<Runnable>()
     private var byteArrayDecoder = ByteArrayDecoder()
     var humidityCharacteristic: BluetoothGattCharacteristic? = null
     var temperatureCharacteristic: BluetoothGattCharacteristic? = null
@@ -54,59 +48,16 @@ class GattCallback (private val context: Context): BluetoothGattCallback(){
                     for (characteristic in service.characteristics){
                         if (characteristic.uuid.toString() == BuildConfig.TEMPERATURE_CHARACTERISTIC_UUID){
                             temperatureCharacteristic = characteristic
-                            /**
-                            characteristicQueue.add(Runnable {
-                                gatt.readCharacteristic(characteristic)
-                            })
-                            characteristicQueue.add(Runnable {
-                                gatt.setCharacteristicNotification(characteristic, true)
-                                val descriptor = characteristic.getDescriptor(
-                                    UUID.fromString(
-                                        BuildConfig.DESCRIPTOR_UUID
-                                    )
-                                )
-                                descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                                gatt.writeDescriptor(descriptor)
-                            })
-                                */
-
                         }
                         if (characteristic.uuid.toString() == BuildConfig.HUMIDITY_CHARACTERISTIC_UUID){
                             humidityCharacteristic = characteristic
-                            characteristicQueue.add(Runnable {
-                                gatt.readCharacteristic(characteristic)
-                            })
-                            characteristicQueue.add(Runnable {
-                                gatt.setCharacteristicNotification(characteristic, true)
-                                val descriptor = characteristic.getDescriptor(
-                                    UUID.fromString(
-                                        BuildConfig.DESCRIPTOR_UUID
-                                    )
-                                )
-                                descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                                gatt.writeDescriptor(descriptor)
-
-                            })
                         }
                         if (characteristic.uuid.toString() == BuildConfig.LIGHT_CHARACTERISTIC_UUID){
                             lightCharacteristic = characteristic
-                            /**
-
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-                                //gatt.writeCharacteristic(characteristic, byteArrayOf(0x01), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
-                                Log.e(BuildConfig.LOG_TAG, "Android Version too new, not implemented")
-                            } else{
-                                characteristicQueue.add(Runnable {
-                                    characteristic.setValue(uint16ToBytes(1000))
-                                    gatt.writeCharacteristic(characteristic)
-                                })
-                            }
-                             */
                         }
                     }
                 }
             }
-            runNextCharacteristic()
         }
     }
 
@@ -139,8 +90,6 @@ class GattCallback (private val context: Context): BluetoothGattCallback(){
             intent.putExtra("humidity", humidity.toString())
             context.sendBroadcast(intent)
         }
-
-        runNextCharacteristic()
     }
 
 
@@ -175,7 +124,6 @@ class GattCallback (private val context: Context): BluetoothGattCallback(){
             intent.putExtra("humidity", humidity.toString())
             context.sendBroadcast(intent)
         }
-        runNextCharacteristic()
     }
 
     override fun onCharacteristicWrite(
@@ -184,17 +132,6 @@ class GattCallback (private val context: Context): BluetoothGattCallback(){
         status: Int
     ) {
         Log.i(BuildConfig.LOG_TAG, "Characteristic written with status $status")
-        runNextCharacteristic()
-    }
-
-
-
-    private fun runNextCharacteristic() {
-        if (characteristicQueue.isNotEmpty()) {
-            val firstRunnable = characteristicQueue.first()
-            firstRunnable.run()
-            characteristicQueue.removeAt(0)
-        }
     }
 
     fun uint16ToBytes(value: Int): ByteArray {
