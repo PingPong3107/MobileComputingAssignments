@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MatthiasKünzer</string>
+    <string name="temperature_value">Temperatur: %s °C</string>
+    <string name="humidity_value">Luftfeuchtigkeit: %s %%</string>
+    <string name="submit_fan_speed_button">Eingabe bestätigen</string>
+    <string name="read_temperature_button">Lese Temperatur</string>
+    <string name="read_humidity_button">Lese Luftfeuchtigkeit</string>
+    <string name="subscribe_to_temperature_button">Abonniere Temperatur</string>
+    <string name="subscribe_to_humidity_button">Abonniere Luftfeuchtigkeit</string>
+    <string name="unsubscribe_from_temperature_button">Deabonniere Temperatur</string>
+    <string name="unsubscribe_from_humidity_button">Deabonniere Luftfeuchtigkeit</string>
+    <string name="stop_scan_button">Stoppe Suche</string>
+    <string name="start_scan_button">Starte Suche</string>
+    <string name="connected_to_device_toast">Verbunden mit: %s</string>
+    <string name="disconnected_from_device_toast">Getrennt von: %s</string>
+    <string name="connecting_to_device_toast">Verbinden mit Gerät: %s...</string>
+    <string name="disconnectButton">Trennen</string>
+    <string name="start_scanning_button">Starte Suche</string>
+</resources>

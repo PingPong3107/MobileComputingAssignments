@@ -49,212 +49,9 @@ class MainActivity : AppCompatActivity() {
         @SuppressLint("MissingPermission")
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
-                GattCallback.HUMIDITY_CHANGE -> {
-                    val humidity = intent.getStringExtra("humidity")
-                    Log.i("BTBroadcastReceiver", "Humidity: $humidity")
-                    humidityView.text = "Humidity: $humidity"
-                    // Use the humidity value here
-                }
-                GattCallback.TEMPERATURE_CHANGE -> {
-                    val temperature = intent.getStringExtra("temperature")
-                    Log.i("BTBroadcastReceiver", "Temperature: $temperature")
-                    temperatureView.text = "Temperature: $temperature"
-                    // Use the temperature value here
-                }
-                GattCallback.CONNECTSTATUS -> {
-                    val status = intent.getStringExtra("status")
-                    val address = intent.getStringExtra("address")
-                    Log.i("BTBroadcastReceiver", "Address: $address, Status: $status")
-                    if( status == "Connected"){
-                        Toast.makeText(context, "Connected to $address", Toast.LENGTH_SHORT).show()
-                    } else{
-                        Toast.makeText(context, "Disconnected from $address", Toast.LENGTH_SHORT).show()
-                    }
-
-
-                    if (address == "F8:20:74:F7:2B:82" && status == "Connected"){
-                        val layout = findViewById<LinearLayout>(R.id.newLinearLayout)
-                        val editText = EditText(this@MainActivity)
-                        editText.inputType = InputType.TYPE_CLASS_NUMBER // Set the input type to number
-                        editText.layoutParams = LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT
-                        )
-                        layout.addView(editText)
-
-                        val button = Button(this@MainActivity).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT
-                            )
-                            text = "Set Value"
-                            setOnClickListener {
-                                val number = editText.text.toString().toIntOrNull()
-                                    ?: 0 // Get the number from the EditText
-                                bluetoothManager.gattCallback.lightCharacteristic?.let {
-                                    it.setValue(bluetoothManager.gattCallback.uint16ToBytes(number)) // Use the number here
-                                    bluetoothManager.bluetoothGatt?.writeCharacteristic(it)
-                                }
-                            }
-                        }
-                        layout.addView(button)
-                    }
-
-                    if (address == "F6:B6:2A:79:7B:5D" && status == "Connected"){
-                        val layout = findViewById<LinearLayout>(R.id.newLinearLayout)
-                        temperatureView = TextView(this@MainActivity)
-                        temperatureView.layoutParams = LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT
-                        )
-                        humidityView = TextView(this@MainActivity)
-                        humidityView.layoutParams = LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT
-                        )
-
-                        val gridLayout = GridLayout(this@MainActivity).apply {
-                            rowCount = 2
-                            columnCount = 2
-                            layoutParams = LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT
-                            )
-                        }
-
-                        layout.addView(gridLayout)
-
-                        val readTemperatureCharacteristic = Button(this@MainActivity).apply {
-                            text = "Read Temperature"
-                            layoutParams = GridLayout.LayoutParams().apply {
-                                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                                rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                                width = 0
-                                height = GridLayout.LayoutParams.WRAP_CONTENT
-                            }
-                            setOnClickListener {
-                                bluetoothManager.gattCallback.temperatureCharacteristic?.let { characteristic ->
-                                    bluetoothManager.bluetoothGatt?.readCharacteristic(characteristic)
-                                }
-                            }
-                        }
-
-                        val readHumidityCharacteristic = Button(this@MainActivity).apply {
-                            text = "Read Humidity"
-                            layoutParams = GridLayout.LayoutParams().apply {
-                                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                                rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                                width = 0
-                                height = GridLayout.LayoutParams.WRAP_CONTENT
-                            }
-                            setOnClickListener {
-                                bluetoothManager.gattCallback.humidityCharacteristic?.let { characteristic ->
-                                    bluetoothManager.bluetoothGatt?.readCharacteristic(characteristic)
-                                }
-                            }
-                        }
-
-                        val subscribeToTemperatureCharacteristic = Button(this@MainActivity).apply {
-                            text = if (subscribedToTemperature) "Unsubscribe from Temperature" else "Subscribe to Temperature"
-                            layoutParams = GridLayout.LayoutParams().apply {
-                                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                                rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                                width = 0
-                                height = GridLayout.LayoutParams.WRAP_CONTENT
-                            }
-                            setOnClickListener {
-                                text= if (subscribedToTemperature) "Unsubscribe from Temperature" else "Subscribe to Temperature"
-                                if (subscribedToTemperature) {
-                                    bluetoothManager.gattCallback.temperatureCharacteristic?.let { characteristic ->
-                                        bluetoothManager.bluetoothGatt?.setCharacteristicNotification(
-                                            characteristic,
-                                            false
-                                        )
-                                    }
-                                } else {
-
-                                    bluetoothManager.gattCallback.temperatureCharacteristic?.let { characteristic ->
-                                        bluetoothManager.bluetoothGatt?.setCharacteristicNotification(
-                                            characteristic,
-                                            true
-                                        )
-                                    }
-                                    val descriptor =
-                                        bluetoothManager.gattCallback.temperatureCharacteristic?.getDescriptor(
-                                            UUID.fromString(
-                                                BuildConfig.DESCRIPTOR_UUID
-                                            )
-                                        )
-                                    if (descriptor != null) {
-                                        descriptor.value =
-                                            BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                                    }
-                                    bluetoothManager.bluetoothGatt?.writeDescriptor(descriptor)
-                                }
-                                subscribedToTemperature = !subscribedToTemperature
-                            }
-                        }
-
-                        val subscribeToHumidityCharacteristic = Button(this@MainActivity).apply {
-                            text = if (subscribedToHumidity) "Unsubscribe from Humidity" else "Subscribe to Humidity"
-                            layoutParams = GridLayout.LayoutParams().apply {
-                                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                                rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                                width = 0
-                                height = GridLayout.LayoutParams.WRAP_CONTENT
-                            }
-                            setOnClickListener {
-                                text = if (subscribedToHumidity) "Unsubscribe from Humidity" else "Subscribe to Humidity"
-                                if(subscribedToHumidity){
-                                    bluetoothManager.gattCallback.humidityCharacteristic?.let { characteristic ->
-                                        bluetoothManager.bluetoothGatt?.setCharacteristicNotification(
-                                            characteristic,
-                                            false
-                                        )
-                                    }
-                                }
-
-                                else {
-                                    bluetoothManager.gattCallback.humidityCharacteristic?.let { characteristic ->
-                                        bluetoothManager.bluetoothGatt?.setCharacteristicNotification(
-                                            characteristic,
-                                            true
-                                        )
-                                    }
-                                    val descriptor =
-                                        bluetoothManager.gattCallback.humidityCharacteristic?.getDescriptor(
-                                            UUID.fromString(
-                                                BuildConfig.DESCRIPTOR_UUID
-                                            )
-                                        )
-                                    if (descriptor != null) {
-                                        descriptor.value =
-                                            BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                                    }
-                                    bluetoothManager.bluetoothGatt?.writeDescriptor(descriptor)
-                                }
-                                subscribedToHumidity = !subscribedToHumidity
-                            }
-                        }
-                        layout.addView(temperatureView)
-                        layout.addView(humidityView)
-                        gridLayout.addView(readTemperatureCharacteristic)
-                        gridLayout.addView(subscribeToTemperatureCharacteristic)
-                        gridLayout.addView(readHumidityCharacteristic)
-                        gridLayout.addView(subscribeToHumidityCharacteristic)
-
-
-                    }
-                    if(status == "Disconnected"){
-                        val layout = findViewById<LinearLayout>(R.id.newLinearLayout)
-                        layout.removeAllViews()
-                        subscribedToHumidity = false
-                        subscribedToTemperature = false
-                    }
-
-
-                    // Use the status and address values here
-                }
+                GattCallback.HUMIDITY_CHANGE -> handleHumidityChange(intent)
+                GattCallback.TEMPERATURE_CHANGE -> handleTemperatureChange(intent)
+                GattCallback.CONNECTSTATUS -> handleConnectStatus(context, intent)
             }
         }
     }
@@ -291,6 +88,217 @@ class MainActivity : AppCompatActivity() {
         bluetoothManager.close()
     }
 
+
+    private fun handleHumidityChange(intent: Intent){
+        val humidity = intent.getStringExtra("humidity")
+        Log.i("BTBroadcastReceiver", getString(R.string.humidity_value, humidity))
+        humidityView.text = getString(R.string.humidity_value, humidity)
+    }
+
+    private fun handleTemperatureChange(intent: Intent){
+        val temperature = intent.getStringExtra("temperature")
+        Log.i("BTBroadcastReceiver", getString(R.string.temperature_value, temperature))
+        temperatureView.text = getString(R.string.temperature_value, temperature)
+    }
+
+    private fun handleConnectStatus(context: Context, intent: Intent){
+        val status = intent.getStringExtra("status")
+        val address = intent.getStringExtra("address")
+        Log.i("BTBroadcastReceiver", "Address: $address, Status: $status")
+        if( status == "Connected"){
+            Toast.makeText(context, getString(R.string.connected_to_device_toast, address), Toast.LENGTH_SHORT).show()
+        } else{
+            Toast.makeText(context, getString(R.string.disconnected_from_device_toast, address), Toast.LENGTH_SHORT).show()
+        }
+        updateConnectionUI(context, address, status)
+    }
+
+    private fun updateConnectionUI(context: Context, address: String?, status: String?){
+        val layout = findViewById<LinearLayout>(R.id.newLinearLayout)
+        if (status == "Connected"){
+            when (address){
+                "F8:20:74:F7:2B:82" -> setupNumberInput(context, layout)
+                "F6:B6:2A:79:7B:5D" -> setupSensorReading(context, layout)
+            }
+        } else if (status == "Disconnected") {
+            layout.removeAllViews()
+            subscribedToHumidity = false
+            subscribedToTemperature = false
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun setupNumberInput(context: Context, layout: LinearLayout){
+        val editText = EditText(this@MainActivity)
+        editText.inputType = InputType.TYPE_CLASS_NUMBER // Set the input type to number
+        editText.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        layout.addView(editText)
+
+        val button = Button(this@MainActivity).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            text = getString(R.string.submit_fan_speed_button)
+            setOnClickListener {
+                val number = editText.text.toString().toIntOrNull()
+                    ?: 0 // Get the number from the EditText
+                bluetoothManager.gattCallback.lightCharacteristic?.let {
+                    it.setValue(bluetoothManager.gattCallback.uint16ToBytes(number)) // Use the number here
+                    bluetoothManager.bluetoothGatt?.writeCharacteristic(it)
+                }
+            }
+        }
+        layout.addView(button)
+
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun setupSensorReading(context: Context, layout: LinearLayout){
+        temperatureView = TextView(this@MainActivity)
+        temperatureView.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        humidityView = TextView(this@MainActivity)
+        humidityView.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+
+        val gridLayout = GridLayout(this@MainActivity).apply {
+            rowCount = 2
+            columnCount = 2
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val readTemperatureCharacteristic = Button(this@MainActivity).apply {
+            text = getString(R.string.read_temperature_button)
+            layoutParams = GridLayout.LayoutParams().apply {
+                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                width = 0
+                height = GridLayout.LayoutParams.WRAP_CONTENT
+            }
+            setOnClickListener {
+                bluetoothManager.gattCallback.temperatureCharacteristic?.let { characteristic ->
+                    bluetoothManager.bluetoothGatt?.readCharacteristic(characteristic)
+                }
+            }
+        }
+
+        val readHumidityCharacteristic = Button(this@MainActivity).apply {
+            text = getString(R.string.read_humidity_button)
+            layoutParams = GridLayout.LayoutParams().apply {
+                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                width = 0
+                height = GridLayout.LayoutParams.WRAP_CONTENT
+            }
+            setOnClickListener {
+                bluetoothManager.gattCallback.humidityCharacteristic?.let { characteristic ->
+                    bluetoothManager.bluetoothGatt?.readCharacteristic(characteristic)
+                }
+            }
+        }
+        val subscribeToTemperatureCharacteristic = Button(this@MainActivity).apply {
+            text = if (subscribedToTemperature) getString(R.string.unsubscribe_from_temperature_button) else getString(R.string.subscribe_to_temperature_button)
+            layoutParams = GridLayout.LayoutParams().apply {
+                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                width = 0
+                height = GridLayout.LayoutParams.WRAP_CONTENT
+            }
+            setOnClickListener {
+                text = if (!subscribedToTemperature) getString(R.string.unsubscribe_from_temperature_button) else getString(R.string.subscribe_to_temperature_button)
+                if (subscribedToTemperature) {
+                    bluetoothManager.gattCallback.temperatureCharacteristic?.let { characteristic ->
+                        bluetoothManager.bluetoothGatt?.setCharacteristicNotification(
+                            characteristic,
+                            false
+                        )
+                    }
+                } else {
+
+                    bluetoothManager.gattCallback.temperatureCharacteristic?.let { characteristic ->
+                        bluetoothManager.bluetoothGatt?.setCharacteristicNotification(
+                            characteristic,
+                            true
+                        )
+                    }
+                    val descriptor =
+                        bluetoothManager.gattCallback.temperatureCharacteristic?.getDescriptor(
+                            UUID.fromString(
+                                BuildConfig.DESCRIPTOR_UUID
+                            )
+                        )
+                    if (descriptor != null) {
+                        descriptor.value =
+                            BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                    }
+                    bluetoothManager.bluetoothGatt?.writeDescriptor(descriptor)
+                }
+                subscribedToTemperature = !subscribedToTemperature
+            }
+        }
+
+        val subscribeToHumidityCharacteristic = Button(this@MainActivity).apply {
+            text = if (subscribedToHumidity) getString(R.string.unsubscribe_from_humidity_button) else getString(R.string.subscribe_to_humidity_button)
+            layoutParams = GridLayout.LayoutParams().apply {
+                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                width = 0
+                height = GridLayout.LayoutParams.WRAP_CONTENT
+            }
+            setOnClickListener {
+                text = if (!subscribedToHumidity) getString(R.string.unsubscribe_from_humidity_button) else getString(R.string.subscribe_to_humidity_button)
+                if(subscribedToHumidity){
+                    bluetoothManager.gattCallback.humidityCharacteristic?.let { characteristic ->
+                        bluetoothManager.bluetoothGatt?.setCharacteristicNotification(
+                            characteristic,
+                            false
+                        )
+                    }
+                }
+
+                else {
+                    bluetoothManager.gattCallback.humidityCharacteristic?.let { characteristic ->
+                        bluetoothManager.bluetoothGatt?.setCharacteristicNotification(
+                            characteristic,
+                            true
+                        )
+                    }
+                    val descriptor =
+                        bluetoothManager.gattCallback.humidityCharacteristic?.getDescriptor(
+                            UUID.fromString(
+                                BuildConfig.DESCRIPTOR_UUID
+                            )
+                        )
+                    if (descriptor != null) {
+                        descriptor.value =
+                            BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                    }
+                    bluetoothManager.bluetoothGatt?.writeDescriptor(descriptor)
+                }
+                subscribedToHumidity = !subscribedToHumidity
+            }
+        }
+
+        gridLayout.addView(readTemperatureCharacteristic)
+        gridLayout.addView(subscribeToTemperatureCharacteristic)
+        gridLayout.addView(readHumidityCharacteristic)
+        gridLayout.addView(subscribeToHumidityCharacteristic)
+        layout.addView(temperatureView)
+        layout.addView(humidityView)
+        layout.addView(gridLayout)
+    }
+
     private fun setupListViewListener() {
         listView.setOnItemClickListener { _, _, position, _ ->
             val deviceAddress = devices[position].substringAfter("(").substringBefore(")")
@@ -304,7 +312,7 @@ class MainActivity : AppCompatActivity() {
         val scanButton: Button = findViewById(R.id.scanButton)
         scanButton.setOnClickListener {
             bluetoothManager.scanLeDevice(!bluetoothManager.isScanning)
-            scanButton.text = if (bluetoothManager.isScanning) "Stop Scanning" else "Start Scanning"
+            scanButton.text = if (bluetoothManager.isScanning) getString(R.string.stop_scan_button) else getString(R.string.start_scan_button)
         }
 
         val disconnectButton: Button = findViewById(R.id.disconnectButton)

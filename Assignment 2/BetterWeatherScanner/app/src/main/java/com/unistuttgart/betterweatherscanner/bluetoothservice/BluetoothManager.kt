@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.unistuttgart.betterweatherscanner.BuildConfig
 import com.unistuttgart.betterweatherscanner.DeviceAdapter
+import com.unistuttgart.betterweatherscanner.R
 
 @SuppressLint("MissingPermission")
 class BluetoothManager(private val context: Context, adapter: DeviceAdapter, devices:MutableList<String>) {
@@ -53,7 +54,7 @@ class BluetoothManager(private val context: Context, adapter: DeviceAdapter, dev
         close()
         bluetoothGatt = device.connectGatt(context, false, gattCallback)
         Log.i(BuildConfig.LOG_TAG, "Connecting to ${device.name}...")
-        Toast.makeText(context, "Connecting to ${device.name}...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context,context.getString(R.string.connecting_to_device_toast, device.name), Toast.LENGTH_SHORT).show()
     }
 
     fun disconnect() {

@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">BetterWeatherScanner</string>
+    <string name="temperature_value">Temperature: %s °C</string>
+    <string name="humidity_value">Humidity: %s %%</string>
+    <string name="submit_fan_speed_button">Submit Value</string>
+    <string name="read_temperature_button">Read Temperature</string>
+    <string name="read_humidity_button">Read Humidity</string>
+    <string name="subscribe_to_temperature_button">Subscribe to Temperature</string>
+    <string name="subscribe_to_humidity_button">Subscribe to Humidity</string>
+    <string name="unsubscribe_from_temperature_button">Unsubscribe from Temperature</string>
+    <string name="unsubscribe_from_humidity_button">Unsubscribe from Humidity</string>
+    <string name="stop_scan_button">Stop Scanning</string>"
+    <string name="start_scan_button">Start Scanning</string>
+    <string name="connected_to_device_toast">Connected with device: %s</string>
+    <string name="disconnected_from_device_toast">Disconnected from device: %s</string>
+    <string name="connecting_to_device_toast">Connecting to device: %s…</string>
+    <string name="disconnectButton">Disconnect</string>
+    <string name="start_scanning_button">Start Scanning</string>
+
 </resources>
