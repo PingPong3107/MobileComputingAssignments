@@ -7,9 +7,13 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import com.unistuttgart.betterweatherscanner.BuildConfig
 import com.unistuttgart.betterweatherscanner.ByteArrayDecoder
+import com.unistuttgart.betterweatherscanner.R
 
 @SuppressLint("MissingPermission")
 class GattCallback (private val context: Context): BluetoothGattCallback(){
@@ -132,13 +136,9 @@ class GattCallback (private val context: Context): BluetoothGattCallback(){
         status: Int
     ) {
         Log.i(BuildConfig.LOG_TAG, "Characteristic written with status $status")
-    }
-
-    fun uint16ToBytes(value: Int): ByteArray {
-        return byteArrayOf(
-            (value and 0xFF).toByte(),
-            ((value shr 8) and 0xFF).toByte()
-        )
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(context, context.getString(R.string.fanCharacteristicWriteFeedback), Toast.LENGTH_SHORT).show()
+        }
     }
 
     companion object {

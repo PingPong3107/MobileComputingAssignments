@@ -16,5 +16,5 @@
     <string name="connecting_to_device_toast">Connecting to device: %s…</string>
     <string name="disconnectButton">Disconnect</string>
     <string name="start_scanning_button">Start Scanning</string>
-
+    <string name ="fanCharacteristicWriteFeedback">Fan speed modified successfully</string>
 </resources>

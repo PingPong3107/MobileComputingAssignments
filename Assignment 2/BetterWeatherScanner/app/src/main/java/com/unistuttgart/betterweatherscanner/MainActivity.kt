@@ -88,6 +88,41 @@ class MainActivity : AppCompatActivity() {
         bluetoothManager.close()
     }
 
+    private fun setupListViewListener() {
+        listView.setOnItemClickListener { _, _, position, _ ->
+            val deviceAddress = devices[position].substringAfter("(").substringBefore(")")
+            val device = bluetoothManager.bluetoothAdapter.getRemoteDevice(deviceAddress)
+            bluetoothManager.connectToDevice(this, device)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun setupButtonListeners() {
+        val scanButton: Button = findViewById(R.id.scanButton)
+        scanButton.setOnClickListener {
+            bluetoothManager.scanLeDevice(!bluetoothManager.isScanning)
+            scanButton.text = if (bluetoothManager.isScanning) getString(R.string.stop_scan_button) else getString(R.string.start_scan_button)
+        }
+
+        val disconnectButton: Button = findViewById(R.id.disconnectButton)
+        disconnectButton.setOnClickListener {
+            bluetoothManager.disconnect()
+        }
+    }
+
+    private fun checkPermissions() {
+        val requiredPermissions = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+            arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
+        } else {
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN)
+        }
+
+        requiredPermissions.forEach {
+            if (ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(it)
+            }
+        }
+    }
 
     private fun handleHumidityChange(intent: Intent){
         val humidity = intent.getStringExtra("humidity")
@@ -147,13 +182,12 @@ class MainActivity : AppCompatActivity() {
                 val number = editText.text.toString().toIntOrNull()
                     ?: 0 // Get the number from the EditText
                 bluetoothManager.gattCallback.lightCharacteristic?.let {
-                    it.setValue(bluetoothManager.gattCallback.uint16ToBytes(number)) // Use the number here
+                    it.setValue(ByteArrayDecoder().uint16ToBytes(number)) // Use the number here
                     bluetoothManager.bluetoothGatt?.writeCharacteristic(it)
                 }
             }
         }
         layout.addView(button)
-
     }
 
     @SuppressLint("MissingPermission")
@@ -297,41 +331,5 @@ class MainActivity : AppCompatActivity() {
         layout.addView(temperatureView)
         layout.addView(humidityView)
         layout.addView(gridLayout)
-    }
-
-    private fun setupListViewListener() {
-        listView.setOnItemClickListener { _, _, position, _ ->
-            val deviceAddress = devices[position].substringAfter("(").substringBefore(")")
-            val device = bluetoothManager.bluetoothAdapter.getRemoteDevice(deviceAddress)
-            bluetoothManager.connectToDevice(this, device)
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun setupButtonListeners() {
-        val scanButton: Button = findViewById(R.id.scanButton)
-        scanButton.setOnClickListener {
-            bluetoothManager.scanLeDevice(!bluetoothManager.isScanning)
-            scanButton.text = if (bluetoothManager.isScanning) getString(R.string.stop_scan_button) else getString(R.string.start_scan_button)
-        }
-
-        val disconnectButton: Button = findViewById(R.id.disconnectButton)
-        disconnectButton.setOnClickListener {
-            bluetoothManager.disconnect()
-        }
-    }
-
-    private fun checkPermissions() {
-        val requiredPermissions = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
-            arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
-        } else {
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN)
-        }
-
-        requiredPermissions.forEach {
-            if (ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissionLauncher.launch(it)
-            }
-        }
     }
 }

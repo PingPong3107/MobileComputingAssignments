@@ -33,7 +33,7 @@ class ByteArrayDecoder {
          return result/100.0
     }
 
-    private fun uint16ToBytes(value: Int): ByteArray {
+    fun uint16ToBytes(value: Int): ByteArray {
         return byteArrayOf(
             (value and 0xFF).toByte(),
             ((value shr 8) and 0xFF).toByte()
