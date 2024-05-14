@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
@@ -178,6 +179,7 @@ class MainActivity : AppCompatActivity() {
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
             text = getString(R.string.submit_fan_speed_button)
+            backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.gray))
             setOnClickListener {
                 val number = editText.text.toString().toIntOrNull()
                     ?: 0 // Get the number from the EditText
@@ -219,6 +221,7 @@ class MainActivity : AppCompatActivity() {
                 rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
                 width = 0
                 height = GridLayout.LayoutParams.WRAP_CONTENT
+                backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.gray))
             }
             setOnClickListener {
                 bluetoothManager.gattCallback.temperatureCharacteristic?.let { characteristic ->
@@ -234,6 +237,7 @@ class MainActivity : AppCompatActivity() {
                 rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
                 width = 0
                 height = GridLayout.LayoutParams.WRAP_CONTENT
+                backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.gray))
             }
             setOnClickListener {
                 bluetoothManager.gattCallback.humidityCharacteristic?.let { characteristic ->
@@ -248,9 +252,11 @@ class MainActivity : AppCompatActivity() {
                 rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
                 width = 0
                 height = GridLayout.LayoutParams.WRAP_CONTENT
+                backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.gray))
             }
             setOnClickListener {
                 text = if (!subscribedToTemperature) getString(R.string.unsubscribe_from_temperature_button) else getString(R.string.subscribe_to_temperature_button)
+                backgroundTintList = if (!subscribedToTemperature) ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.violet)) else ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.gray))
                 if (subscribedToTemperature) {
                     bluetoothManager.gattCallback.temperatureCharacteristic?.let { characteristic ->
                         bluetoothManager.bluetoothGatt?.setCharacteristicNotification(
@@ -289,9 +295,11 @@ class MainActivity : AppCompatActivity() {
                 rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
                 width = 0
                 height = GridLayout.LayoutParams.WRAP_CONTENT
+                backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.gray))
             }
             setOnClickListener {
                 text = if (!subscribedToHumidity) getString(R.string.unsubscribe_from_humidity_button) else getString(R.string.subscribe_to_humidity_button)
+                backgroundTintList = if (!subscribedToTemperature) ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.violet)) else ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.gray))
                 if(subscribedToHumidity){
                     bluetoothManager.gattCallback.humidityCharacteristic?.let { characteristic ->
                         bluetoothManager.bluetoothGatt?.setCharacteristicNotification(
