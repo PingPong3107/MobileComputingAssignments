@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GPSEmpfänger</string>
+    <string name="start_service">Starte Service</string>
+    <string name="stopButtonText">Stoppe Service</string>
+    <string name="updateButtonText">Aktualisiere Werte</string>
+    <string name="latitudeTextView">Längengrad: %s</string>
+    <string name="longitudeTextView">Breitengrad: %s</string>
+    <string name="distanceTextView">Distanz: %s m</string>
+    <string name="average_speedTextView">Durchschnittsgeschwindigkeit: %s m/s</string>
+</resources>

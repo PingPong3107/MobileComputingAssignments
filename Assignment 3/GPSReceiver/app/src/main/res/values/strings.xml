@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">GPSReceiver</string>
+    <string name="start_service">Start Service</string>
+    <string name="stopButtonText">Stop Service</string>
+    <string name="updateButtonText">Update Values</string>
+    <string name="latitudeTextView">Latitude: %s</string>
+    <string name="longitudeTextView">Longitude: %s</string>
+    <string name="distanceTextView">Distance: %s m</string>
+    <string name="average_speedTextView">Average Speed: %s m/s</string>
+</resources>
