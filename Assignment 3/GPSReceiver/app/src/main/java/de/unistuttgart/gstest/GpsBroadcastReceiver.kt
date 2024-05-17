@@ -18,7 +18,6 @@ import java.util.Date
 
 
 class GpsBroadcastReceiver: BroadcastReceiver() {
-    private val gpxWriter= GPXWriter()
     private val gpxFile = GPX()
     private lateinit var track : Track
     private lateinit var trackSegment: TrackSegment
@@ -42,6 +41,8 @@ class GpsBroadcastReceiver: BroadcastReceiver() {
                     } else if (status == 0) {
                         Log.i("GpsBroadcastReceiver", "Service stopped")
                         saveGPX()
+                        gpxFile.tracks.clear()
+                        waypointList.clear()
                     }
                 }
             }
@@ -57,9 +58,10 @@ class GpsBroadcastReceiver: BroadcastReceiver() {
     }
 
     private fun saveGPX(){
-        val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "outFile.gpx")
-        val out = FileOutputStream(file)
-        gpxWriter.writeGPX(gpxFile,out)
-        out.close()
+            val gpxWriter = GPXWriter()
+            val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "outFile.gpx")
+            val out = FileOutputStream(file)
+            if(waypointList.isNotEmpty()) gpxWriter.writeGPX(gpxFile, out)
+            out.close()
     }
 }

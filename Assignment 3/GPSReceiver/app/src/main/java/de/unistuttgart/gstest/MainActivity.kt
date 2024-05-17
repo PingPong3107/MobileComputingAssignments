@@ -59,14 +59,12 @@ class MainActivity : AppCompatActivity() {
             filter,
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
-        findViewById<TextView>(R.id.latTextView).text = getString(R.string.latitudeTextView).format("")
-        findViewById<TextView>(R.id.lngTextView).text = getString(R.string.longitudeTextView).format("")
-        findViewById<TextView>(R.id.distanceTextView).text = getString(R.string.distanceTextView).format(0)
-        findViewById<TextView>(R.id.averageSpeedTextView).text = getString(R.string.average_speedTextView).format(0)
+        resetLocationInformationView()
 
         findViewById<Button>(R.id.updateValues).setOnClickListener {
             if (gpsBroadcastReceiver.waypointList.isEmpty()) {
                 Toast.makeText(this, "No waypoints recorded", Toast.LENGTH_SHORT).show()
+                resetLocationInformationView()
                 return@setOnClickListener
             }
             findViewById<TextView>(R.id.latTextView).text = getString(R.string.latitudeTextView).format(gpsBroadcastReceiver.waypointList.last().latitude)
@@ -74,6 +72,17 @@ class MainActivity : AppCompatActivity() {
             findViewById<TextView>(R.id.distanceTextView).text = getString(R.string.distanceTextView).format(calculateDistances().toString())
             findViewById<TextView>(R.id.averageSpeedTextView).text = getString(R.string.average_speedTextView).format(calculateAverageSpeed().toString())
         }
+    }
+
+    private fun resetLocationInformationView() {
+        findViewById<TextView>(R.id.latTextView).text =
+            getString(R.string.latitudeTextView).format("")
+        findViewById<TextView>(R.id.lngTextView).text =
+            getString(R.string.longitudeTextView).format("")
+        findViewById<TextView>(R.id.distanceTextView).text =
+            getString(R.string.distanceTextView).format(0)
+        findViewById<TextView>(R.id.averageSpeedTextView).text =
+            getString(R.string.average_speedTextView).format(0)
     }
 
 
