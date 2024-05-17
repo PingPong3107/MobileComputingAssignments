@@ -22,6 +22,7 @@ class GpsBroadcastReceiver: BroadcastReceiver() {
     private val gpxFile = GPX()
     private lateinit var track : Track
     private lateinit var trackSegment: TrackSegment
+    var waypointList = mutableListOf<Waypoint>()
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent != null) {
@@ -52,6 +53,7 @@ class GpsBroadcastReceiver: BroadcastReceiver() {
         val date = Date(location.time)
         waypoint.time = date
         trackSegment.addWaypoint(waypoint)
+        waypointList.add(waypoint)
     }
 
     private fun saveGPX(){

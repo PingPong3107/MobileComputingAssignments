@@ -54,11 +54,11 @@ class GpsBackgroundService: Service() {
     }
 
     override fun onDestroy() {
-        locationManager?.removeLocationUpdates()
-        serviceScope.cancel()
         val stopIntent = Intent(MyLocationListener.SERVICE_STARTSTOP)
         stopIntent.putExtra("status", 0)
         this.sendBroadcast(stopIntent)
+        locationManager?.removeLocationUpdates()
+        serviceScope.cancel()
     }
 
     private fun createNotificationChannel() {
