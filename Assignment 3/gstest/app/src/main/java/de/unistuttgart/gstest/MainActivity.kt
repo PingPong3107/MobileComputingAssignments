@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
 
         val filter = IntentFilter().apply {
             addAction(MyLocationListener.LOCATION_CHANGED)
+            addAction(MyLocationListener.SERVICE_STARTSTOP)
         }
         ContextCompat.registerReceiver(this, gpsBroadcastReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }

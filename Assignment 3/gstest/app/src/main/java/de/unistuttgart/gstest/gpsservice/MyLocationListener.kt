@@ -5,6 +5,8 @@ import android.content.Intent
 import android.location.Location
 import android.location.LocationListener
 import android.util.Log
+import me.himanshusoni.gpxparser.modal.Waypoint
+import java.util.Date
 
 class MyLocationListener(private val context:Context): LocationListener {
     override fun onLocationChanged(location: Location) {
@@ -24,5 +26,6 @@ class MyLocationListener(private val context:Context): LocationListener {
 
     companion object{
         const val LOCATION_CHANGED = "LOCATION_CHANGED"
+        const val SERVICE_STARTSTOP = "SERVICE_STARTSTOP"
     }
 }

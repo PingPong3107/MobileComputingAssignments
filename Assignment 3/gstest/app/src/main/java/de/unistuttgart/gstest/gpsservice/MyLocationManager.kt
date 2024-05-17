@@ -30,7 +30,7 @@ class MyLocationManager(private val context: Context) {
 
     @SuppressLint("MissingPermission")
     fun requestLocationUpdates() {
-        locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0f, locationListener)
+        locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1f, locationListener)
 
     }
 
