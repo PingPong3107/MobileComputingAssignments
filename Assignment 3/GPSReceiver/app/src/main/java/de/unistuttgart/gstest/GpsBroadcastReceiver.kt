@@ -6,6 +6,7 @@ import android.content.Intent
 import android.location.Location
 import android.os.Environment
 import android.util.Log
+import android.widget.TextView
 import de.unistuttgart.gstest.gpsservice.MyLocationListener
 import me.himanshusoni.gpxparser.GPXWriter
 import me.himanshusoni.gpxparser.modal.GPX
@@ -17,7 +18,7 @@ import java.io.FileOutputStream
 import java.util.Date
 
 
-class GpsBroadcastReceiver: BroadcastReceiver() {
+class GpsBroadcastReceiver(private var numberOfPointsGot: TextView): BroadcastReceiver() {
     private val gpxFile = GPX()
     private lateinit var track : Track
     private lateinit var trackSegment: TrackSegment
@@ -27,9 +28,11 @@ class GpsBroadcastReceiver: BroadcastReceiver() {
         if (intent != null) {
             when (intent.action) {
 
-                MyLocationListener.LOCATION_CHANGED -> locationChanged(
+                MyLocationListener.LOCATION_CHANGED -> {locationChanged(
                     intent.getParcelableExtra("location")!!
                 )
+                numberOfPointsGot.text = context?.getString(R.string.number_of_waypoints)?.format(waypointList.size)
+                }
                 MyLocationListener.SERVICE_STARTSTOP -> {
                     val status = intent.getIntExtra("status", -1)
                     if (status == 1) {
@@ -44,6 +47,7 @@ class GpsBroadcastReceiver: BroadcastReceiver() {
                         gpxFile.tracks.clear()
                         waypointList.clear()
                     }
+                    numberOfPointsGot.text = context?.getString(R.string.number_of_waypoints)?.format(waypointList.size)
                 }
             }
         }

@@ -26,14 +26,14 @@
             android:id="@+id/stopService"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/stopButtonText" />
+            android:text="@string/stop_button_text" />
     </LinearLayout>
 
     <Button
         android:id="@+id/updateValues"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/updateButtonText"
+        android:text="@string/update_button_text"
         app:layout_constraintTop_toBottomOf="@id/buttonLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -50,25 +50,31 @@
             android:id="@+id/latTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/latitudeTextView" />
+            android:text="@string/latitude_textview" />
 
         <TextView
             android:id="@+id/lngTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/longitudeTextView" />
+            android:text="@string/longitude_textview" />
 
         <TextView
             android:id="@+id/distanceTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/distanceTextView" />
+            android:text="@string/distance_textview" />
 
         <TextView
             android:id="@+id/averageSpeedTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/average_speedTextView" />
+            android:text="@string/average_speed_textview" />
+
+        <TextView
+            android:id="@+id/numberOfWaypoints"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/number_of_waypoints" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

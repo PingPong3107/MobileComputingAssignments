@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.Manifest
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -23,7 +22,8 @@ import kotlin.math.sqrt
 
 class MainActivity : AppCompatActivity() {
     private lateinit var ui: UI
-    private val gpsBroadcastReceiver = GpsBroadcastReceiver()
+    private lateinit var numberOfWaypoints: TextView
+    private lateinit var gpsBroadcastReceiver: GpsBroadcastReceiver
     private val requestPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()
@@ -42,6 +42,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+
+        numberOfWaypoints = findViewById(R.id.numberOfWaypoints)
+        numberOfWaypoints.text = getString(R.string.number_of_waypoints).format(0)
+        gpsBroadcastReceiver = GpsBroadcastReceiver(numberOfWaypoints)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -67,22 +72,22 @@ class MainActivity : AppCompatActivity() {
                 resetLocationInformationView()
                 return@setOnClickListener
             }
-            findViewById<TextView>(R.id.latTextView).text = getString(R.string.latitudeTextView).format(gpsBroadcastReceiver.waypointList.last().latitude)
-            findViewById<TextView>(R.id.lngTextView).text = getString(R.string.longitudeTextView).format(gpsBroadcastReceiver.waypointList.last().longitude.toString())
-            findViewById<TextView>(R.id.distanceTextView).text = getString(R.string.distanceTextView).format(calculateDistances().toString())
-            findViewById<TextView>(R.id.averageSpeedTextView).text = getString(R.string.average_speedTextView).format(calculateAverageSpeed().toString())
+            findViewById<TextView>(R.id.latTextView).text = getString(R.string.latitude_textview).format(gpsBroadcastReceiver.waypointList.last().latitude)
+            findViewById<TextView>(R.id.lngTextView).text = getString(R.string.longitude_textview).format(gpsBroadcastReceiver.waypointList.last().longitude.toString())
+            findViewById<TextView>(R.id.distanceTextView).text = getString(R.string.distance_textview).format(calculateDistances().toString())
+            findViewById<TextView>(R.id.averageSpeedTextView).text = getString(R.string.average_speed_textview).format(calculateAverageSpeed().toString())
         }
     }
 
     private fun resetLocationInformationView() {
         findViewById<TextView>(R.id.latTextView).text =
-            getString(R.string.latitudeTextView).format("")
+            getString(R.string.latitude_textview).format("")
         findViewById<TextView>(R.id.lngTextView).text =
-            getString(R.string.longitudeTextView).format("")
+            getString(R.string.longitude_textview).format("")
         findViewById<TextView>(R.id.distanceTextView).text =
-            getString(R.string.distanceTextView).format(0)
+            getString(R.string.distance_textview).format(0)
         findViewById<TextView>(R.id.averageSpeedTextView).text =
-            getString(R.string.average_speedTextView).format(0)
+            getString(R.string.average_speed_textview).format(0)
     }
 
 

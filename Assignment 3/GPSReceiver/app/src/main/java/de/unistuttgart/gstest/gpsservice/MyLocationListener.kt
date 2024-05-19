@@ -10,7 +10,7 @@ import java.util.Date
 
 class MyLocationListener(private val context:Context): LocationListener {
     override fun onLocationChanged(location: Location) {
-        Log.i("MyLocationListener", "Location changed: $location")
+        //Log.i("MyLocationListener", "Location changed: $location")
         val intent = Intent(LOCATION_CHANGED)
         intent.putExtra("location", location)
         context.sendBroadcast(intent)
