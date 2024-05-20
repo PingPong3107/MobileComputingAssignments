@@ -18,7 +18,7 @@ import java.io.FileOutputStream
 import java.util.Date
 
 
-class GpsBroadcastReceiver(private var numberOfPointsGot: TextView): BroadcastReceiver() {
+class GpsBroadcastReceiver(): BroadcastReceiver() {
     private val gpxFile = GPX()
     private lateinit var track : Track
     private lateinit var trackSegment: TrackSegment
@@ -31,7 +31,6 @@ class GpsBroadcastReceiver(private var numberOfPointsGot: TextView): BroadcastRe
                 MyLocationListener.LOCATION_CHANGED -> {locationChanged(
                     intent.getParcelableExtra("location")!!
                 )
-                numberOfPointsGot.text = context?.getString(R.string.number_of_waypoints)?.format(waypointList.size)
                 }
                 MyLocationListener.SERVICE_STARTSTOP -> {
                     val status = intent.getIntExtra("status", -1)
@@ -47,7 +46,6 @@ class GpsBroadcastReceiver(private var numberOfPointsGot: TextView): BroadcastRe
                         gpxFile.tracks.clear()
                         waypointList.clear()
                     }
-                    numberOfPointsGot.text = context?.getString(R.string.number_of_waypoints)?.format(waypointList.size)
                 }
             }
         }

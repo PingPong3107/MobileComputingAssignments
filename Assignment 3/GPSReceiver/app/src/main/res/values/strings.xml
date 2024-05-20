@@ -3,9 +3,13 @@
     <string name="start_service">Start Service</string>
     <string name="stop_button_text">Stop Service</string>
     <string name="update_button_text">Update Values</string>
-    <string name="latitude_textview">Latitude: %s</string>
-    <string name="longitude_textview">Longitude: %s</string>
-    <string name="distance_textview">Distance: %s m</string>
-    <string name="average_speed_textview">Average Speed: %s m/s</string>
-    <string name="number_of_waypoints">Number of Waypoints: %s</string>
+    <string name="latitude_textview">%s</string>
+    <string name="longitude_textview">%s</string>
+    <string name="distance_textview">%s m</string>
+    <string name="average_speed_textview">%s m/s</string>
+    <string name="number_of_waypoints">%s</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+    <string name="distance">Distance</string>
+    <string name="average_speed">⌀ Speed</string>
 </resources>

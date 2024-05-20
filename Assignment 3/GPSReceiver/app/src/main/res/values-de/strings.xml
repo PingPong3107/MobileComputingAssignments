@@ -4,9 +4,13 @@
     <string name="start_service">Starte Service</string>
     <string name="stop_button_text">Stoppe Service</string>
     <string name="update_button_text">Aktualisiere Werte</string>
-    <string name="latitude_textview">Längengrad: %s</string>
-    <string name="longitude_textview">Breitengrad: %s</string>
-    <string name="distance_textview">Distanz: %s m</string>
-    <string name="average_speed_textview">Durchschnittsgeschwindigkeit: %s m/s</string>
-    <string name="number_of_waypoints">Anzahl der Wegpunkte: %s</string>
+    <string name="latitude_textview">%s</string>
+    <string name="longitude_textview">%s</string>
+    <string name="distance_textview">%s m</string>
+    <string name="average_speed_textview">%s m/s</string>
+    <string name="number_of_waypoints">%s</string>
+    <string name="latitude">Längengrad</string>
+    <string name="longitude">Breitengrad</string>
+    <string name="distance">Distanz</string>
+    <string name="average_speed">⌀ Geschwindigkeit</string>
 </resources>
