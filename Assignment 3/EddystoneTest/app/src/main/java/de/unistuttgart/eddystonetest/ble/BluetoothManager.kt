@@ -18,7 +18,7 @@ import androidx.lifecycle.MutableLiveData
 
 @SuppressLint("MissingPermission")
 class BluetoothManager(private val context: Context) {
-    private val scanCallback = ScanCallback()
+    private val scanCallback = ScanCallback(context)
 
     private val bluetoothAdapter: BluetoothAdapter by lazy {
         (context.getSystemService(Context.BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager).adapter
@@ -49,5 +49,9 @@ class BluetoothManager(private val context: Context) {
 
             }
         }
+    }
+
+    companion object{
+        const val BEACONDATA = "BEACONDATA"
     }
 }

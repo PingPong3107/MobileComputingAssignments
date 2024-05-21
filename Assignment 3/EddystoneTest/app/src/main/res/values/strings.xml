@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">EddystoneTest</string>
+    <string name="beacon_id">Beacon ID</string>
+    <string name="url">URL</string>
+    <string name="voltage">Voltage</string>
+    <string name="temperature">Temperature</string>
+    <string name="distance">Distance</string>
+    <string name="url_textview">%s</string>
+    <string name="voltage_textview">%s mV</string>
+    <string name="temperature_textview">%s °C</string>
+    <string name="distance_textview">%s m</string>
+    <string name="beacon_id_textview">%s</string>
 </resources>

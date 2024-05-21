@@ -1,14 +1,21 @@
 package de.unistuttgart.eddystonetest
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import de.unistuttgart.eddystonetest.ble.BluetoothManager
@@ -21,6 +28,36 @@ class MainActivity : AppCompatActivity() {
     ) { isGranted: Boolean ->
         if (!isGranted) {
             finish()
+        }
+    }
+
+    private val broadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val action = intent?.action
+            if (action == BluetoothManager.BEACONDATA) {
+                val extras = intent.extras
+                if (extras != null) {
+                    for (key in extras.keySet()) {
+                        when(key){
+                            "Beacon Temperature" -> findViewById<TextView>(R.id.temperatureTextview).apply {
+                                text = getString(R.string.beacon_id_textview).format(extras.get("Beacon Temperature").toString())
+                            }
+                            "BeaconID" -> findViewById<TextView>(R.id.beaconIDTextview).apply {
+                                text = getString(R.string.beacon_id_textview).format(extras.get("BeaconID").toString())
+                            }
+                            "Distance" -> findViewById<TextView>(R.id.distanceTextview).apply {
+                                text = getString(R.string.distance_textview).format(extras.get("Distance").toString().take(3))
+                            }
+                            "Battery Voltage" -> findViewById<TextView>(R.id.voltageTextview).apply {
+                                text = getString(R.string.voltage_textview).format(extras.get("Battery Voltage").toString())
+                            }
+                            "URL" -> findViewById<TextView>(R.id.urlTextview).apply {
+                                text = getString(R.string.url_textview).format(extras.get("URL").toString())
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,11 +73,41 @@ class MainActivity : AppCompatActivity() {
         }
         checkPermissions()
         setButtonListeners()
+        resetCards()
+
+        val filter = IntentFilter().apply {
+            addAction(BluetoothManager.BEACONDATA)
+        }
+        ContextCompat.registerReceiver(
+            this,
+            broadcastReceiver,
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+    }
+
+    private fun resetCards() {
+        findViewById<TextView>(R.id.temperatureTextview).apply {
+            text = getString(R.string.beacon_id_textview).format("-")
+        }
+        findViewById<TextView>(R.id.beaconIDTextview).apply {
+            text = getString(R.string.beacon_id_textview).format("-")
+        }
+        findViewById<TextView>(R.id.distanceTextview).apply {
+            text = getString(R.string.distance_textview).format("-")
+        }
+        findViewById<TextView>(R.id.voltageTextview).apply {
+            text = getString(R.string.voltage_textview).format("-")
+        }
+        findViewById<TextView>(R.id.urlTextview).apply {
+            text = getString(R.string.url_textview).format("-")
+        }
     }
 
     private fun setButtonListeners() {
         val scanButton = findViewById<Button>(R.id.scanButton)
         scanButton.setOnClickListener {
+            resetCards()
             bluetoothManager.scanLeDevice(bluetoothManager.isScanning)
             scanButton.text = if (!bluetoothManager.isScanning) "Start Scan" else "Stop Scan"
 
