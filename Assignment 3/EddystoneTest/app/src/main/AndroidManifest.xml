@@ -6,13 +6,11 @@
         android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
-        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"
         android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
-        android:usesPermissionFlags="neverForLocation"
-        tools:targetApi="s" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <!-- never for location vllt ein problem -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
 
@@ -25,7 +23,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.EddystoneTest"
-        tools:targetApi="31">
+        android:screenOrientation="portrait"
+        tools:targetApi="31"
+        tools:ignore="DiscouragedApi">
         <activity
             android:name=".MainActivity"
             android:exported="true">

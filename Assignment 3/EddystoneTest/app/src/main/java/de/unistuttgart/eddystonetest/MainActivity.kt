@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
     }
     private fun checkPermissions() {
         val requiredPermissions = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
-            arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
+            arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.ACCESS_FINE_LOCATION)
         } else {
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN)
         }
