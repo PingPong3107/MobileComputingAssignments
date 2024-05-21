@@ -5,8 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
-import android.widget.TextView
+import android.widget.Toast
 import de.unistuttgart.gstest.gpsservice.MyLocationListener
 import me.himanshusoni.gpxparser.GPXWriter
 import me.himanshusoni.gpxparser.modal.GPX
@@ -15,10 +17,12 @@ import me.himanshusoni.gpxparser.modal.TrackSegment
 import me.himanshusoni.gpxparser.modal.Waypoint
 import java.io.File
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 
-class GpsBroadcastReceiver(): BroadcastReceiver() {
+class GpsBroadcastReceiver(private val context: Context): BroadcastReceiver() {
     private val gpxFile = GPX()
     private lateinit var track : Track
     private lateinit var trackSegment: TrackSegment
@@ -60,10 +64,25 @@ class GpsBroadcastReceiver(): BroadcastReceiver() {
     }
 
     private fun saveGPX(){
+        if(waypointList.isNotEmpty()){
             val gpxWriter = GPXWriter()
-            val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "outFile.gpx")
+            val formatter: SimpleDateFormat = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.GERMANY)
+            val now = Date()
+            val fileName: String = "outFile_" + formatter.format(now) + ".gpx"
+            val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName)
             val out = FileOutputStream(file)
-            if(waypointList.isNotEmpty()) gpxWriter.writeGPX(gpxFile, out)
+            gpxWriter.writeGPX(gpxFile, out)
             out.close()
+
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(context, context.getString(R.string.store).format(fileName), Toast.LENGTH_SHORT).show()
+            }
+        }
+        else{
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(context, context.getString(R.string.no_store), Toast.LENGTH_SHORT).show()
+            }
+        }
+
     }
 }

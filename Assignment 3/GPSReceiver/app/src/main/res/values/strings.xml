@@ -12,4 +12,8 @@
     <string name="longitude">Longitude</string>
     <string name="distance">Distance</string>
     <string name="average_speed">⌀ Speed</string>
+    <string name="perms">Permission denied</string>
+    <string name="no_wp">No waypoint recorded</string>
+    <string name="store">Waypoints stored in %s</string>
+    <string name="no_store">No waypoints available to store</string>
 </resources>

@@ -13,4 +13,8 @@
     <string name="longitude">Breitengrad</string>
     <string name="distance">Distanz</string>
     <string name="average_speed">⌀ Geschwindigkeit</string>
+    <string name="perms">Berechtigung verweigert</string>
+    <string name="no_wp">Kein Wegpunkt erkannt</string>
+    <string name="store">Wegpunkte gespeichert in %s</string>
+    <string name="no_store">Keine Wegpunkte zum Speichern vorhanden</string>
 </resources>

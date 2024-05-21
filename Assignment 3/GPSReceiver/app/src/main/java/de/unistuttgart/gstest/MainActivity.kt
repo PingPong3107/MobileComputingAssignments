@@ -29,9 +29,9 @@ class MainActivity : AppCompatActivity() {
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
-                ui = UI(this)
+                ui = UI(this, this)
             } else {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, this.getString(R.string.perms), Toast.LENGTH_SHORT).show()
                 finish()
             }
         }
@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        gpsBroadcastReceiver = GpsBroadcastReceiver()
+        gpsBroadcastReceiver = GpsBroadcastReceiver(this)
 
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.updateValues).setOnClickListener {
             if (gpsBroadcastReceiver.waypointList.isEmpty()) {
-                Toast.makeText(this, "No waypoints recorded", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, this.getString(R.string.no_wp), Toast.LENGTH_SHORT).show()
                 resetLocationInformationView()
                 return@setOnClickListener
             }
@@ -98,11 +98,11 @@ class MainActivity : AppCompatActivity() {
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
-                ui = UI(this)
+                ui = UI(this, this)
             }
             ActivityCompat.shouldShowRequestPermissionRationale(
                 this, Manifest.permission.ACCESS_FINE_LOCATION) -> {
-                Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, this.getString(R.string.perms), Toast.LENGTH_SHORT).show()
             }
             else -> {
                 requestPermissionLauncher.launch(
