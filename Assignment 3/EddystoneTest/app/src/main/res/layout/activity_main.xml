@@ -42,11 +42,12 @@
                 android:orientation="vertical"
                 android:gravity="center"
                 android:layout_gravity="center_vertical|center_horizontal">
+
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_launcher_background"
-                    android:layout_margin="5dp"/>
+                    android:layout_margin="5dp"
+                    android:src="@drawable/baseline_badge_24" />
                 <TextView
                     android:id="@+id/beaconIDTextview"
                     android:layout_width="wrap_content"
@@ -80,11 +81,12 @@
                 android:orientation="vertical"
                 android:gravity="center"
                 android:layout_gravity="center_vertical|center_horizontal">
+
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_launcher_background"
-                    android:layout_margin="5dp"/>
+                    android:layout_margin="5dp"
+                    android:src="@drawable/baseline_insert_link_24" />
                 <TextView
                     android:id="@+id/urlTextview"
                     android:layout_width="wrap_content"
@@ -118,11 +120,12 @@
                 android:orientation="vertical"
                 android:gravity="center"
                 android:layout_gravity="center_vertical|center_horizontal">
+
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_launcher_background"
-                    android:layout_margin="5dp"/>
+                    android:layout_margin="5dp"
+                    android:src="@drawable/baseline_bolt_24" />
                 <TextView
                     android:id="@+id/voltageTextview"
                     android:layout_width="wrap_content"
@@ -156,11 +159,12 @@
                 android:orientation="vertical"
                 android:gravity="center"
                 android:layout_gravity="center_vertical|center_horizontal">
+
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_launcher_background"
-                    android:layout_margin="5dp"/>
+                    android:layout_margin="5dp"
+                    android:src="@drawable/baseline_device_thermostat_24" />
                 <TextView
                     android:id="@+id/temperatureTextview"
                     android:layout_width="wrap_content"
@@ -180,10 +184,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_row="2"
-            android:layout_column="0"
-            android:layout_gravity="fill"
-            android:layout_columnWeight="1"
             android:layout_rowWeight="1"
+            android:layout_column="0"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill"
             android:layout_margin="5dp"
             app:cardCornerRadius="10dp"
             app:cardElevation="10dp">
@@ -191,26 +195,29 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_gravity="center_vertical|center_horizontal"
                 android:gravity="center"
-                android:layout_gravity="center_vertical|center_horizontal">
+                android:orientation="vertical">
+
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_launcher_background"
-                    android:layout_margin="5dp"/>
+                    android:layout_margin="5dp"
+                    android:src="@drawable/baseline_architecture_24" />
+
                 <TextView
                     android:id="@+id/distanceTextview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/distance_textview"
-                    android:textStyle="bold"
-                    android:textAlignment="center"/>
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/distance"
-                    android:textAlignment="center"/>
+                    android:textAlignment="center" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
     </GridLayout>
