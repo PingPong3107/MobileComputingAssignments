@@ -37,18 +37,19 @@ class ScanCallback(private val context: Context) : ScanCallback(){
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private fun decodeUIDFrame(bytes: ByteArray, rssi: Int){
         val txPower = bytes[1]
         val namespace = bytes.sliceArray(2..11)
         val instance = bytes.sliceArray(12..17)
         Log.i("ScanCallback", "Frame type: UID")
         Log.i("ScanCallback", "TX Power: $txPower")
-        Log.i("ScanCallback", "Namespace: ${namespace.joinToString("") { it.toString(16) }}")
+        Log.i("ScanCallback", "Namespace: ${namespace.toHexString()}")
         Log.i("ScanCallback", "Instance: ${instance.joinToString("") { it.toString(16) }}")
         Log.i("ScanCallback", "Distance: ${calculateDistance(rssi, txPower.toInt())}")
 
         val intent = Intent(BluetoothManager.BEACONDATA)
-        intent.putExtra("BeaconID", instance.joinToString("") { it.toString(16) })
+        intent.putExtra("BeaconID", namespace.toHexString() + " / " + instance.joinToString("") { it.toString(16) })
         intent.putExtra("Distance", calculateDistance(rssi, txPower.toInt()))
         context.sendBroadcast(intent)
     }
