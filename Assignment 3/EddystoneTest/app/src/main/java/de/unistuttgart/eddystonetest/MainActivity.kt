@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -78,6 +79,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         toolbar.title = getString(R.string.app_name)
         toolbar.setTitleTextColor(Color.BLACK)
+        window.statusBarColor = (toolbar.background as ColorDrawable).color
 
         checkPermissions()
         setButtonListeners()
