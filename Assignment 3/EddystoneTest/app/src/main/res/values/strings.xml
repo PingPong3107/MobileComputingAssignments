@@ -5,9 +5,10 @@
     <string name="voltage">Voltage</string>
     <string name="temperature">Temperature</string>
     <string name="distance">Distance</string>
-    <string name="url_textview">%s</string>
-    <string name="voltage_textview">%s mV</string>
-    <string name="temperature_textview">%s °C</string>
-    <string name="distance_textview">%s m</string>
-    <string name="beacon_id_textview">%s</string>
+    <string name="url_textview" translatable="false">%s</string>
+    <string name="voltage_textview" translatable="false">%s mV</string>
+    <string name="temperature_textview" translatable="false">%s °C</string>
+    <string name="distance_textview" translatable="false">%s m</string>
+    <string name="beacon_id_textview" translatable="false">%s</string>
+    <string name="start_scan">Start Scan</string>
 </resources>

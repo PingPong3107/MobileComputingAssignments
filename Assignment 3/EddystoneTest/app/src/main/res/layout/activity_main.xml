@@ -7,14 +7,24 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <Button
         android:id="@+id/scanButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Scan"
+        android:text="@string/start_scan"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <GridLayout
         android:layout_width="match_parent"
@@ -48,6 +58,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/baseline_badge_24" />
                 <TextView
                     android:id="@+id/beaconIDTextview"
@@ -87,6 +98,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/baseline_insert_link_24" />
                 <TextView
                     android:id="@+id/urlTextview"
@@ -126,6 +138,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/baseline_bolt_24" />
                 <TextView
                     android:id="@+id/voltageTextview"
@@ -165,6 +178,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/baseline_device_thermostat_24" />
                 <TextView
                     android:id="@+id/temperatureTextview"
@@ -204,6 +218,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/baseline_architecture_24" />
 
                 <TextView

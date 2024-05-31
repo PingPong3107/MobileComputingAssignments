@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +15,7 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -71,6 +73,12 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        toolbar.title = getString(R.string.app_name)
+        toolbar.setTitleTextColor(Color.BLACK)
+
         checkPermissions()
         setButtonListeners()
         resetCards()
@@ -106,6 +114,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setButtonListeners() {
         val scanButton = findViewById<Button>(R.id.scanButton)
+        scanButton.setTextColor(Color.BLACK)
         scanButton.setOnClickListener {
             resetCards()
             bluetoothManager.scanLeDevice(bluetoothManager.isScanning)
