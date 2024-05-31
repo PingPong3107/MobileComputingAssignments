@@ -79,6 +79,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/latitude"
                     android:layout_margin="5dp"/>
                 <TextView
@@ -117,6 +118,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/longitude"
                     android:layout_margin="5dp"/>
                 <TextView
@@ -155,6 +157,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/distance"
                     android:layout_margin="5dp"/>
                 <TextView
@@ -193,6 +196,7 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/speedometer"
                     android:layout_margin="5dp"/>
                 <TextView
