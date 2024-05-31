@@ -18,7 +18,6 @@ dependencyResolutionManagement {
         mavenCentral()
         //noinspection JcenterRepositoryObsolete
         jcenter()
-
     }
 }
 

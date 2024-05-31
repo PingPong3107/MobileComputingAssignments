@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.Manifest
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -47,6 +49,8 @@ class MainActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
         toolbar.title = getString(R.string.app_name)
+        toolbar.setTitleTextColor(Color.BLACK)
+        window.statusBarColor = (toolbar.background as ColorDrawable).color
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
