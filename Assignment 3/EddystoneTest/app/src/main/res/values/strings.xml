@@ -11,4 +11,5 @@
     <string name="distance_textview" translatable="false">%s m</string>
     <string name="beacon_id_textview" translatable="false">%s</string>
     <string name="start_scan">Start Scan</string>
+    <string name="stop_scan">Stop Scan</string>
 </resources>

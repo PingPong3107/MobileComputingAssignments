@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity() {
         scanButton.setOnClickListener {
             resetCards()
             bluetoothManager.scanLeDevice(bluetoothManager.isScanning)
-            scanButton.text = if (!bluetoothManager.isScanning) "Start Scan" else "Stop Scan"
+            scanButton.text = if (!bluetoothManager.isScanning) this.getString(R.string.start_scan) else this.getString(R.string.stop_scan)
 
         }
 
