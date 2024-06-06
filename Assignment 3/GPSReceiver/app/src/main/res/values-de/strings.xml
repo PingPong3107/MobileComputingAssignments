@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">GPSEmpfänger</string>
+    <string name="app_name">WOVEmpfänger</string>
     <string name="start_service">Starte Dienst</string>
     <string name="stop_button_text">Stoppe Dienst</string>
     <string name="update_button_text">Erneuere Werte</string>
