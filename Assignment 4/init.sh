@@ -1,9 +1,29 @@
 #!/bin/bash
 
-for i in "60" "61" "62" "64" "65" "66"
-do
-    mkdir "/home/dumudingirak/${i}team6"
-    adress="192.168.210.$i:/home/team6"
-    sshpass -p "ohn2IDef" sshfs $adress "/home/dumudingirak/${i}team6"
-    echo "Mounter folder for Node ${i}"
+# Datei, die gesendet werden soll
+FILE_TO_SEND="/home/ingo/Downloads/test.txt"
+
+# IP-Adressen oder Hostnamen der Raspberry Pis
+HOSTS=("129.69.210.60" "129.69.210.61" "129.69.210.62" "129.69.210.63" "129.69.210.64" "129.69.210.65" "129.69.210.66")
+
+# Benutzername für die Raspberry Pis
+USERNAME="team6"
+
+# Passwort für die Raspberry Pis
+PASSWORD="ohn2IDef"
+
+# Zielverzeichnis auf den Raspberry Pis
+DEST_DIR="/home/team6"
+
+# Schleife über die Hosts und sende die Datei
+for HOST in "${HOSTS[@]}"; do
+    echo "Sende $FILE_TO_SEND an $HOST..."
+    sshpass -p "$PASSWORD" scp "$FILE_TO_SEND" "$USERNAME@$HOST:$DEST_DIR"
+    if [ $? -eq 0 ]; then
+        echo "Datei erfolgreich an $HOST gesendet."
+    else
+        echo "Fehler beim Senden der Datei an $HOST."
+    fi
 done
+
+echo "Fertig!"
