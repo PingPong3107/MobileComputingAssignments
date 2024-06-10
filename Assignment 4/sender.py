@@ -1,9 +1,12 @@
 import socket
 import uuid
 
-message_id = uuid.uuid4()
 
-def send_message(message_text):
+
+def send_message(message_text, uuid=None):
+
+    if uuid is None:
+        message_id = uuid.uuid4()
 
     
     bcast_msg = f"{message_id}:{message_text}".encode()
