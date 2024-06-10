@@ -21,4 +21,6 @@ def send_message(message_text):
     print(f"Sent message: {bcast_msg} to {broadcast_address}:{broadcast_port}")
     sock.close()
 
-send_message("Hello, world, prepare for KONSEQUENZEN!")
+
+if __name__ == "__main__":
+    send_message("Hello, world, prepare for KONSEQUENZEN!")
