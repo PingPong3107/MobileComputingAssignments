@@ -3,9 +3,9 @@ import uuid
 
 
 
-def send_message(message_text, uuid=None):
+def send_message(message_text, message_id=None):
 
-    if uuid is None:
+    if message_id is None:
         message_id = uuid.uuid4()
 
     
