@@ -1,4 +1,5 @@
 import socket
+from sender import send_message
 
 received_message_ids =[]
 
@@ -17,5 +18,6 @@ while True:
     if message_id not in received_message_ids:
         received_message_ids.append(message_id)
         print(f"Received new message: {data} from {addr}")
-    print(f"Received duplicate message: {data} from {addr}")
+        send_message("Bounce")
+
     
