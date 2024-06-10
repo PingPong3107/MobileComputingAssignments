@@ -18,6 +18,6 @@ while True:
     if message_id not in received_message_ids:
         received_message_ids.append(message_id)
         print(f"Received new message: {data} from {addr}")
-        send_message(message_id,"Bounce")
+        send_message(message_id,f"Bounce from {socket.gethostname()}")
 
     
