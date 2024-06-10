@@ -1,9 +1,11 @@
 import socket
 import uuid
 
+message_id = uuid.uuid4()
+
 def send_message(message_text):
 
-    message_id = uuid.uuid4()
+    
     bcast_msg = f"{message_id}:{message_text}".encode()
     team_number = 6
 
