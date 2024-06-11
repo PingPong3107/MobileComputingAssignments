@@ -1,24 +1,20 @@
 import json
 import socket
 import sys
-from uuid import UUID, uuid4
-from utils import MessageTypes, get_local_ip
+from utils import MessageTypes, get_local_ip, generate_message
 
-def send_message(message_text : str, header : dict):
-
-    header_json : bytes = json.dumps(header).encode('utf-8')
+def send_message(message: bytes):
     sock : socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
     team_number : int = 6
-    udp_packet : bytes = header_json + b'\n' + message_text.encode('utf-8')
     broadcast_address : str = "192.168.210.255"
     broadcast_port : int = 5000 + team_number
 
     for _ in range(5):
-        sock.sendto(udp_packet, (broadcast_address, broadcast_port))
+        sock.sendto(message, (broadcast_address, broadcast_port))
 
-    print(f"Sent message: {udp_packet} to {broadcast_address}:{broadcast_port}")
+    print(f"Sent message: {message} to {broadcast_address}:{broadcast_port}")
     sock.close()
 
 def forward_message(udp_packet : bytes):
@@ -41,7 +37,6 @@ def forward_message(udp_packet : bytes):
 
 
 if __name__ == "__main__":
-    message_id: UUID = uuid4()
     header = {
         'uuid': str(uuid4()),  # Beispiel UUID
         'ttl': 10,  # Beispiel TTL
@@ -50,4 +45,5 @@ if __name__ == "__main__":
         'type': MessageTypes.ROUTE_REQUEST  # Beispiel Typ
     }    
     messagePayload : str = "Hello, world, prepare for KONSEQUENZEN!"
-    send_message(messagePayload,header)
+    test_message: bytes = generate_message(sys.argv[1], MessageTypes.ROUTE_REQUEST, messagePayload)
+    send_message(test_message)

@@ -1,6 +1,6 @@
 import re
 import subprocess
-
+from uuid import UUID, uuid4
 
 class MessageTypes():
     UNDEFINED = 0
@@ -30,11 +30,19 @@ def get_local_ip() -> str:
     return "No local IP found"
 
 
+def generate_message(destination: str, msg_type: int, payload: str, ttl = 5) -> bytes:
+    header = generate_msg_header(destination, msg_type, ttl)
+    header_json : bytes = json.dumps(header).encode('utf-8')
+    return (header_json + b'\n' + payload.encode('utf-8'))
 
-
-
-
-
+def generate_msg_header(destination: str, msg_type: int, ttl : int) -> dict:
+    return {
+        'uuid': str(uuid4()),
+        'ttl': ttl,
+        'source_ip': get_local_ip(),
+        'destination_ip': destination,
+        'type': msg_type
+    }
 
 
 
