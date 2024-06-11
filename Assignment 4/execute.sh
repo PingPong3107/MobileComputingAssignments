@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # IP-Adressen oder Hostnamen der Raspberry Pis
-HOSTS=("129.69.210.63" "129.69.210.64" "129.69.210.65")
+HOSTS=("129.69.210.64" "129.69.210.65")
 
 # Benutzername für die Raspberry Pis
 USERNAME="team6"

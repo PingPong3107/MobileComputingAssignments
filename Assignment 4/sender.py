@@ -14,17 +14,17 @@ def send_message(message_text, header):
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
     team_number = 6
-    udp_packet = header_json + b'\n' + message_text
+    udp_packet = header_json + b'\n' + message_text.encode('utf-8')
     broadcast_address = "192.168.210.255"
     broadcast_port = 5000 + team_number
 
-    for i in range(10):
+    for _ in range(10):
         sock.sendto(udp_packet, (broadcast_address, broadcast_port))
 
     print(f"Sent message: {udp_packet} to {broadcast_address}:{broadcast_port}")
     sock.close()
 
-def resend_message(udpPacket):
+def forward_message(udp_packet):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -34,10 +34,10 @@ def resend_message(udpPacket):
     broadcast_address = "192.168.210.255"
     broadcast_port = 5000 + team_number
 
-    for i in range(10):
-        sock.sendto(udpPacket, (broadcast_address, broadcast_port))
+    for _ in range(10):
+        sock.sendto(udp_packet, (broadcast_address, broadcast_port))
 
-    print(f"Resent message: {udpPacket} to {broadcast_address}:{broadcast_port}")
+    print(f"Resent message: {udp_packet} to {broadcast_address}:{broadcast_port}")
     sock.close()
 
 
