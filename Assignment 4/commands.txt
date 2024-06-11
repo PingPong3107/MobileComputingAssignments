@@ -1,0 +1,1 @@
+fuser -k 5006/udp || true;PYTHONUNBUFFERED=1 python3 receiver.py
