@@ -1,25 +1,37 @@
 import json
 import socket
-from sender import send_message, forward_message
 
-received_message_ids =[]
+from utils import get_local_ip
+from sender import (
+    send_message,
+    forward_message,
+    MessageTypes
+)
 
-buffer_size = 1024
-team_number = 6
+received_message_ids: list = []
 
-zuccstnso = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+buffer_size: int = 1024
+team_number: int = 6
 
-receiver_port = 5000 + team_number
-zuccstnso.bind(('', receiver_port))
+zuccstnso: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+receiver_port: int = 5000 + team_number
+zuccstnso.bind(("", receiver_port))
 
 while True:
     data, addr = zuccstnso.recvfrom(buffer_size)
-    header_json, payload = data.split(b'\n', 1)
-    header = json.loads(header_json.decode('utf-8'))
-    uuid = header.get('uuid', None)
-    if uuid and uuid not in received_message_ids:
+    header_json, payload = data.split(b"\n", 1)
+    header: dict = json.loads(header_json.decode("utf-8"))
+    new_header: dict = header.copy()
+    if new_header["ttl"] < 1:
+        continue
+    
+    new_header["ttl"] -= 1
+    uuid : str = header["uuid"]
+    if uuid not in received_message_ids:
         received_message_ids.append(uuid)
         print(f"Received new message: {data} from {addr}")
-        forward_message(data)
-
-    
+        if new_header["destination_ip"] == get_local_ip():
+            print(f"Juhu die Nachricht ist angekommen :)")
+        else:
+            forward_message(data)
