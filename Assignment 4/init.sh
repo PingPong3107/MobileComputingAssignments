@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Datei, die gesendet werden soll
-FILE_TO_SEND="/home/ingo/git/MobileComputingAssignments/Assignment 4/receiver.py"
+FILE_TO_SEND="/home/ingo/git/MobileComputingAssignments/Assignment 4/utils.py"
 
 # IP-Adressen oder Hostnamen der Raspberry Pis
 HOSTS=("129.69.210.60" "129.69.210.61" "129.69.210.62" "129.69.210.63" "129.69.210.64" "129.69.210.65" "129.69.210.66")
