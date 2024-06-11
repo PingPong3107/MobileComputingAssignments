@@ -1,3 +1,4 @@
+import json
 import socket
 from sender import send_message
 
@@ -13,11 +14,11 @@ zuccstnso.bind(('', receiver_port))
 
 while True:
     data, addr = zuccstnso.recvfrom(buffer_size)
-    message = data.decode()
-    message_id, message_text = message.split(":", 1)
-    if message_id not in received_message_ids:
-        received_message_ids.append(message_id)
+    header_json, payload = data.split(b'\n', 1)
+    header = json.loads(header_json.decode('utf-8'))
+    if header['uuid'] not in received_message_ids:
+        received_message_ids.append(header['uuid'])
         print(f"Received new message: {data} from {addr}")
-        send_message(message_id,f"Bounce from {socket.gethostname()}")
+        send_message(header['uuid'],f"Bounce from {socket.gethostname()}")
 
     
