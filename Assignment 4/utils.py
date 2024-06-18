@@ -1,10 +1,10 @@
 import re
 import subprocess
-from uuid import uuid4
 import json
 from datetime import datetime
 
-class MessageTypes():
+
+class MessageTypes:
     UNDEFINED = 0
     ROUTE_REQUEST = 1
     ROUTE_RESPONSE = 2
@@ -12,35 +12,62 @@ class MessageTypes():
     ROUTE_ERROR = -1
 
 
+
 def get_local_ip() -> str:
     """
     Method created by ChatGPT
     """
-    result = subprocess.run(['ip', 'addr', 'show', 'wlan0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    ip_pattern = re.compile(r'inet (\d+\.\d+\.\d+\.\d+)/\d+')
-    ips : list[str] = ip_pattern.findall(result.stdout)
+    result = subprocess.run(
+        ["ip", "addr", "show", "wlan0"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    ip_pattern = re.compile(r"inet (\d+\.\d+\.\d+\.\d+)/\d+")
+    ips: list[str] = ip_pattern.findall(result.stdout)
 
     for ip in ips:
         if ip.startswith("192.168."):
             return ip
-    
+
     raise Exception("No local IP found")
 
 
-def generate_message(destination: str, msg_type: int, payload: str, ttl = 5) -> bytes:
-    header = generate_msg_header(destination, msg_type, ttl)
-    header_json : bytes = json.dumps(header).encode('utf-8')
-    return (header_json + b'\n' + payload.encode('utf-8'))
+def generate_message(
+    destination: str, msg_type: int, payload: str, uuid, ttl=10, path: list = None
+) -> bytes:
+    header: dict = generate_msg_header(destination, msg_type, ttl, uuid, path)
+    event_logger(f"path ist {header['path']}")
+    event_logger(f"sollte {[get_local_ip()]}")
+    header_json: bytes = json.dumps(header).encode("utf-8")
+    return header_json + b"\n" + payload.encode("utf-8")
 
-def generate_msg_header(destination: str, msg_type: int, ttl : int) -> dict:
-    return {
-        'uuid': str(uuid4()),
-        'ttl': ttl,
-        'source_ip': get_local_ip(),
-        'destination_ip': destination,
-        'type': msg_type
-    }
+
+def generate_msg_header(
+    destination: str, msg_type: int, ttl: int, uuid, path: list = None
+) -> dict:
+    if path == None:
+
+        local_ip=get_local_ip()
+        return {
+            "uuid": uuid,
+            "ttl": ttl,
+            "source_ip": get_local_ip(),
+            "destination_ip": destination,
+            "type": msg_type,
+            "path": [local_ip],
+        }
+    else:
+        return {
+            "uuid": uuid,
+            "ttl": ttl,
+            "source_ip": get_local_ip(),
+            "destination_ip": destination,
+            "type": msg_type,
+            "path": path,
+        }
+
 
 def event_logger(message: str):
-    current_time=datetime.now().strftime("%H:%M:%S")
+    current_time = datetime.now().strftime("%H:%M:%S")
     print(f"{current_time}: {message}")

@@ -3,12 +3,13 @@ import socket
 from utils import get_local_ip, event_logger, MessageTypes, generate_message
 from sender import forward_message, send_message_to
 from dsr import routes
+from uuid import uuid4
 
 
-def send_route_response(path: list):
+def send_route_response(path: list, uuid):
     nextHop = path[-1]
     send_message_to(
-        generate_message(nextHop, MessageTypes.ROUTE_RESPONSE, "-"), nextHop
+        generate_message(nextHop, MessageTypes.ROUTE_RESPONSE, "-",uuid,path=path), nextHop
     )
 
 
@@ -18,11 +19,18 @@ def handle_route_request(header: dict, data: bytes):
     if uuid not in received_message_ids:
         received_message_ids.append(uuid)
         event_logger(f"Received new route request: {data}")
+        path:list=header['path']
         if header["destination_ip"] == get_local_ip():
-            event_logger(f"Message delivered successfully!")
-            send_route_response(header["path"])
+            event_logger(f"I am the destination")
+            path.append(get_local_ip())
+            send_route_response(header['path'],str(uuid4()))
         else:
-            forward_message(data)
+          
+            event_logger(f"path ist {header['path']}")
+            path.append(get_local_ip())
+            header_json : bytes = json.dumps(header).encode('utf-8')
+            packet=header_json + b'\n' + data
+            forward_message(packet)
 
 
 def handle_route_response(header: dict, data:bytes):
@@ -39,9 +47,9 @@ def handle_route_response(header: dict, data:bytes):
 
 def forward_route_response_or_data(header:dict, data:bytes):
     path:list=header['path']
-    nextHop=path[path.index(get_local_ip)-1]
+    nextHop=path[path.index(get_local_ip())-1]
     header_json : bytes = json.dumps(header).encode('utf-8')
-    packet=header_json + b'\n' + data.encode('utf-8')
+    packet=header_json + b'\n' + data
     send_message_to(packet,nextHop)
 
 def save_path_to_routing_table(path:list):

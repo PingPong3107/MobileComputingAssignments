@@ -20,7 +20,7 @@ open_terminal() {
         fuser -k 5006/udp || true
         echo 'Prozess beendet oder kein Prozess auf dem Port.'
         echo 'Starte das Python-Skript...'
-        PYTHONUNBUFFERED=1 python3 $REMOTE_SCRIPT
+        PYTHONUNBUFFERED=1 python3 $REMOTE_SCRIPT -
         echo 'Python-Skript gestartet.'
         exec bash
 EOF
