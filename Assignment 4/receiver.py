@@ -2,6 +2,7 @@ import json
 import socket
 from utils import get_local_ip, event_logger, MessageTypes, generate_message
 from sender import forward_message, send_message_to
+from dsr import routes
 
 
 def send_route_response(path: list):
@@ -44,7 +45,7 @@ def forward_route_response_or_data(header:dict, data:bytes):
     send_message_to(packet,nextHop)
 
 def save_path_to_routing_table(path:list):
-    routing_table[get_local_ip()]=path
+    routes[get_local_ip()]=path
 
 def handle_data_packet(header:dict, data:bytes):
     header["ttl"] -= 1
@@ -60,7 +61,6 @@ def handle_data_packet(header:dict, data:bytes):
 
 if __name__ == "__main__":
     received_message_ids: list = []
-    routing_table:dict = {}
 
     buffer_size: int = 1024
     team_number: int = 6
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         elif type == MessageTypes.ROUTE_RESPONSE:
             handle_route_response(header=header, data=data)
         elif type == MessageTypes.DATA:
-            handle_data_packet()
+            handle_data_packet(header=header,data=data)
         elif type == MessageTypes.ROUTE_ERROR:
             pass
         else:
