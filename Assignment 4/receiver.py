@@ -6,6 +6,10 @@ from dsr import routes
 from uuid import uuid4
 
 
+
+
+#TODO response klappt noch ned ganz
+
 def send_route_response(path: list, uuid):
     nextHop = path[-1]
     send_message_to(
