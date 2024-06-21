@@ -80,20 +80,27 @@ def handle_route_response(header: dict, data:bytes):
         event_logger(f"Received route response message: {data}")
         if header["path"][0]== get_local_ip():
             event_logger(f"Found Route!")
-            save_path_to_routing_table(header["path"])
+            save_path_to_routing_table(header["path"],header["source_ip"])
             send_routed(sys.argv[2], string_to_sand, routes)
         else:
-            forward_route_response_or_data(header, data)
+            forward_route_response(header, data)
 
-def forward_route_response_or_data(header:dict, data:bytes):
+def forward_route_response(header:dict, data:bytes):
     path:list=header['path']
     nextHop=path[path.index(get_local_ip())-1]
     header_json : bytes = json.dumps(header).encode('utf-8')
     packet=header_json + b'\n' + data
     send_message_to(packet,nextHop)
 
-def save_path_to_routing_table(path:list):
-    routes[get_local_ip()]=path
+def forward_data(header:dict, data:bytes):
+    path:list=header['path']
+    nextHop=path[path.index(get_local_ip())+1]
+    header_json : bytes = json.dumps(header).encode('utf-8')
+    packet=header_json + b'\n' + data
+    send_message_to(packet,nextHop)
+
+def save_path_to_routing_table(path:list, destination:str):
+    routes[destination]=path
 
 def handle_data_packet(header:dict, data:bytes):
     header["ttl"] -= 1
@@ -101,10 +108,10 @@ def handle_data_packet(header:dict, data:bytes):
     if uuid not in received_message_ids:
         received_message_ids.append(uuid)
         event_logger(f"Received data packet: {data}")
-        if header["path"][0]== get_local_ip():
+        if header["path"][-1]== get_local_ip():
             event_logger(f"Received Data from {header['source_ip']}!")
         else:
-            forward_route_response_or_data(header, data)
+            forward_data(header, data)
 
 
 if __name__ == "__main__":
