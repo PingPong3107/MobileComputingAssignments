@@ -37,8 +37,6 @@ def generate_message(
     destination: str, msg_type: int, payload: str, uuid, ttl=10, path: list = None
 ) -> bytes:
     header: dict = generate_msg_header(destination, msg_type, ttl, uuid, path)
-    event_logger(f"path ist {header['path']}")
-    event_logger(f"sollte {[get_local_ip()]}")
     header_json: bytes = json.dumps(header).encode("utf-8")
     return header_json + b"\n" + payload.encode("utf-8")
 
