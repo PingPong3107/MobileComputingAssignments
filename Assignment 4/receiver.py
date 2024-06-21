@@ -141,11 +141,11 @@ if __name__ == "__main__":
         type: int = header["type"]
 
         if type == MessageTypes.ROUTE_REQUEST:
-            handle_route_request(header=header, data=data)
+            handle_route_request(header=header, data=payload)
         elif type == MessageTypes.ROUTE_RESPONSE:
-            handle_route_response(header=header, data=data)
+            handle_route_response(header=header, data=payload)
         elif type == MessageTypes.DATA:
-            handle_data_packet(header=header,data=data)
+            handle_data_packet(header=header,data=payload)
         elif type == MessageTypes.ROUTE_ERROR:
             pass
         else:
