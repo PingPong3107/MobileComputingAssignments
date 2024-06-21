@@ -9,7 +9,8 @@ class MessageTypes:
     ROUTE_REQUEST = 1
     ROUTE_RESPONSE = 2
     DATA = 3
-    ROUTE_ERROR = -1
+    SEND_REQUEST = 4
+    FLOODING = 5
 
 
 
