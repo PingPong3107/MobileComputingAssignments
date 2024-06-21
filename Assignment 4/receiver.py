@@ -2,13 +2,48 @@ import json
 import socket
 from utils import get_local_ip, event_logger, MessageTypes, generate_message
 from sender import forward_message, send_message_to
-from dsr import routes
 from uuid import uuid4
+import sys
+import threading
+from uuid import uuid4
+from sender import send_message, send_message_to
+from utils import generate_message, MessageTypes, event_logger
 
 
 
+def discover_route(destination: str):
+    # Create and broadcast a route request message
+    discovery_message = generate_message(
+        destination, MessageTypes.ROUTE_REQUEST, f"Route to {destination}",str(uuid4())
+    )
+    event_logger("Jetz wird gefloodet")
+    send_message(discovery_message)
 
-#TODO response klappt noch ned ganz
+
+"""
+Use this method to send a message to the destination via a pre-determined route
+"""
+
+
+def send_routed(destination: str, message_payload: str, routing_table: dict):
+    if destination not in routing_table.keys():
+        discover_route(destination)
+    else:
+        send_message_to(
+            generate_message(
+                destination,
+                MessageTypes.DATA,
+                message_payload,
+                path=routing_table[destination],
+                uuid=str(uuid4())
+            ),
+            routing_table[destination][1],
+        )
+
+  
+
+
+
 
 def send_route_response(path: list, uuid):
     nextHop = path[-1]
@@ -46,6 +81,7 @@ def handle_route_response(header: dict, data:bytes):
         if header["path"][0]== get_local_ip():
             event_logger(f"Found Route!")
             save_path_to_routing_table(header["path"])
+            send_routed(sys.argv[2], string_to_sand, routes)
         else:
             forward_route_response_or_data(header, data)
 
@@ -73,7 +109,7 @@ def handle_data_packet(header:dict, data:bytes):
 
 if __name__ == "__main__":
     received_message_ids: list = []
-
+    routes: dict = {}
     buffer_size: int = 1024
     team_number: int = 6
 
@@ -83,6 +119,9 @@ if __name__ == "__main__":
     sock.bind(("", receiver_port))
 
     event_logger(f"Receiver is listening on port {receiver_port}")
+    if sys.argv[1] == "source":
+        string_to_sand="Verbum Domini manet in aeternum!"
+        send_routed(sys.argv[2], string_to_sand, routes)
 
     while True:
         data, addr = sock.recvfrom(buffer_size)
