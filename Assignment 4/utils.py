@@ -11,12 +11,13 @@ class MessageTypes:
     DATA = 3
     SEND_REQUEST = 4
     FLOODING = 5
-
+    FLOOD_REQUEST = 6
 
 
 def get_local_ip() -> str:
     """
-    Method created by ChatGPT
+    Find the local IP of this device.
+    Method created by ChatGPT.
     """
     result = subprocess.run(
         ["ip", "addr", "show", "wlan0"],
@@ -37,6 +38,9 @@ def get_local_ip() -> str:
 def generate_message(
     destination: str, msg_type: int, payload: str, uuid, ttl=10, path: list = None
 ) -> bytes:
+    """
+    Generate a message by creating header and encoding in utf-8.
+    """
     header: dict = generate_msg_header(destination, msg_type, ttl, uuid, path)
     header_json: bytes = json.dumps(header).encode("utf-8")
     return header_json + b"\n" + payload.encode("utf-8")
@@ -45,28 +49,26 @@ def generate_message(
 def generate_msg_header(
     destination: str, msg_type: int, ttl: int, uuid, path: list = None
 ) -> dict:
+    """
+    Generate a message header.
+    If no path is given, set a list containing only the local IP as path.
+    """
+    local_ip = get_local_ip()
     if path == None:
-
-        local_ip=get_local_ip()
-        return {
-            "uuid": uuid,
-            "ttl": ttl,
-            "source_ip": get_local_ip(),
-            "destination_ip": destination,
-            "type": msg_type,
-            "path": [local_ip],
-        }
-    else:
-        return {
-            "uuid": uuid,
-            "ttl": ttl,
-            "source_ip": get_local_ip(),
-            "destination_ip": destination,
-            "type": msg_type,
-            "path": path,
-        }
+        path = [local_ip]
+    return {
+        "uuid": uuid,
+        "ttl": ttl,
+        "source_ip": local_ip,
+        "destination_ip": destination,
+        "type": msg_type,
+        "path": path,
+    }
 
 
 def event_logger(message: str):
-    current_time = datetime.now().strftime("%H:%M:%S")
+    """
+    Log a message together with the current time.
+    """
+    current_time = datetime.now().strftime("%H:%M:%S:%f")
     print(f"{current_time}: {message}")

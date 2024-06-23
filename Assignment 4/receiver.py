@@ -1,115 +1,115 @@
 import json
 import socket
 from utils import get_local_ip, event_logger, MessageTypes, generate_message
-from sender import forward_message, send_message_to
 from uuid import uuid4
-import sys
-import threading
-from uuid import uuid4
-from sender import send_message, send_message_to
-from utils import generate_message, MessageTypes, event_logger
+from sender import broadcast_message, send_message_to, send_route_response, forward_data, forward_route_response
 
 
 def discover_route(destination: str):
-    # Create and broadcast a route request message
+    """
+    Create and broadcast a route request message.
+    """
     discovery_message = generate_message(
         destination, MessageTypes.ROUTE_REQUEST, f"Route to {destination}",str(uuid4())
     )
-    event_logger("Jetz wird gefloodet")
-    send_message(discovery_message)
-
-
-"""
-Use this method to send a message to the destination via a pre-determined route
-"""
+    event_logger("Jetz wird gevladet")
+    broadcast_message(discovery_message)
 
 
 def send_routed(destination: str, message_payload: str, routing_table: dict):
+    """
+    Use this method to send a message to the destination via a pre-determined route.
+    If the route is not determined yet, route discovery will be initiated.
+    """
     if destination not in routing_table.keys():
         discover_route(destination)
     else:
-        send_message_to(
-            generate_message(
+        msg = generate_message(
                 destination,
                 MessageTypes.DATA,
                 message_payload,
                 path=routing_table[destination],
                 uuid=str(uuid4())
-            ),
-            routing_table[destination][1],
-        )
-
-
-def send_route_response(path: list, uuid):
-    nextHop = path[-1]
-    send_message_to(
-        generate_message(nextHop, MessageTypes.ROUTE_RESPONSE, "-",uuid,path=path), nextHop
-    )
+            )
+        send_message_to(msg, routing_table[destination][1])
 
 
 def handle_route_request(header: dict, data: bytes):
-    header["ttl"] -= 1
-    uuid: str = header["uuid"]
-    if uuid not in received_message_ids:
-        received_message_ids.append(uuid)
-        event_logger(f"Received new route request: {data}")
-        path:list=header['path']
-        if header["destination_ip"] == get_local_ip():
-            event_logger(f"I am the destination")
-            path.append(get_local_ip())
-            send_route_response(header['path'],str(uuid4()))
-        else:
-          
-            event_logger(f"path ist {header['path']}")
-            path.append(get_local_ip())
-            header_json : bytes = json.dumps(header).encode('utf-8')
-            packet=header_json + b'\n' + data
-            forward_message(packet)
+    """
+    When receiving a route request, either forward it, or, if you are the destination, send route response.
+    """
+    event_logger(f"Received new route request: {data}")
+    path:list=header['path']
+    path.append(get_local_ip())
+    if header["destination_ip"] == get_local_ip():
+        event_logger("I am the destination")
+        send_route_response(header['path'],str(uuid4()))
+    else:
+        header_json : bytes = json.dumps(header).encode('utf-8')
+        packet=header_json + b'\n' + data
+        broadcast_message(packet)
+
+
+# def store_routes(header: dict):
+
 
 
 def handle_route_response(header: dict, data:bytes):
-    header["ttl"] -= 1
-    uuid: str = header["uuid"]
-    if uuid not in received_message_ids:
-        received_message_ids.append(uuid)
-        event_logger(f"Received route response message: {data}")
-        if header["path"][0]== get_local_ip():
-            event_logger(f"Found Route!")
-            save_path_to_routing_table(header["path"],header["source_ip"])
-            send_routed(destination, text_to_send, routes)
-        else:
-            forward_route_response(header, data)
+    """
+    When receiving a route response, either forward it, or, if you are the source, send the data.
+    """
+    event_logger(f"Received route response message: {data}")
+    # store_routes(header)
+    if header["path"][0]== get_local_ip():
+        event_logger("Found Route!")
+        routes[header["source_ip"]] = header["path"]
+        send_routed(destination, text_to_send, routes)
+    else:
+        forward_route_response(header, data)
 
-def forward_route_response(header:dict, data:bytes):
-    path:list=header['path']
-    nextHop=path[path.index(get_local_ip())-1]
-    header_json : bytes = json.dumps(header).encode('utf-8')
-    packet=header_json + b'\n' + data
-    send_message_to(packet,nextHop)
-
-def forward_data(header:dict, data:bytes):
-    path:list=header['path']
-    nextHop=path[path.index(get_local_ip())+1]
-    header_json : bytes = json.dumps(header).encode('utf-8')
-    packet=header_json + b'\n' + data
-    send_message_to(packet,nextHop)
-
-def save_path_to_routing_table(path:list, destination:str):
-    routes[destination]=path
 
 def handle_data_packet(header:dict, data:bytes):
-    header["ttl"] -= 1
-    uuid: str = header["uuid"]
-    if uuid not in received_message_ids:
-        received_message_ids.append(uuid)
-        event_logger(f"Received data packet: {data}")
-        if header["path"][-1]== get_local_ip():
-            event_logger(f"Received Data from {header['source_ip']}!")
-        else:
-            forward_data(header, data)
+    """
+    When receiving a data packet, either forward it, or, if you are the destination, be happy :)
+    """
+    event_logger(f"Received data packet: {data}")
+    if header["path"][-1]== get_local_ip():
+        event_logger(f"Received Data from {header['source_ip']}!")
+    else:
+        forward_data(header, data)
+
 
 def handle_send_request(header:dict):
+    """
+    When receiving a send request, send along the route or discover it.
+    """
     send_routed(header["destination_ip"],text_to_send,routes)
+
+
+def handle_flood_request(header:dict, payload):
+    """
+    When receiving a flood request, flood the message to the destination.
+    """
+    msg = generate_message(
+                header["destination_ip"],
+                MessageTypes.FLOODING,
+                payload,
+                uuid=str(uuid4())
+            )
+    broadcast_message(msg)
+
+
+def handle_flooding(header, payload):
+    """
+    When receiving a flooding message, either forward it, or, if you are the destination, be happy :)
+    """
+    event_logger(f"Received flooding message: {payload}")
+    if header["destination_ip"] == get_local_ip():
+        event_logger(f"Received message {payload} through flooding.")
+    else:
+        header_json : bytes = json.dumps(header).encode('utf-8')
+        packet=header_json + b'\n' + payload
+        broadcast_message(packet)
 
 
 if __name__ == "__main__":
@@ -134,19 +134,27 @@ if __name__ == "__main__":
 
         if header["ttl"] < 1:
             event_logger(f"Message dropped due to TTL: {data}")
-            continue
-        type: int = header["type"]
-
-        if type == MessageTypes.ROUTE_REQUEST:
-            handle_route_request(header=header, data=payload)
-        elif type == MessageTypes.ROUTE_RESPONSE:
-            handle_route_response(header=header, data=payload)
-        elif type == MessageTypes.DATA:
-            handle_data_packet(header=header,data=payload)
-        elif type == MessageTypes.SEND_REQUEST:
-            destination=header["destination_ip"]
-            text_to_send=payload.decode('utf-8')
-            handle_send_request(header=header)
-
         else:
-            event_logger(f"Unknown message type: {type}")
+            header["ttl"] -= 1
+            uuid: str = header["uuid"]
+            if uuid not in received_message_ids:
+                received_message_ids.append(uuid)
+                msg_type = header["type"]
+
+                match msg_type:
+                    case MessageTypes.ROUTE_REQUEST:
+                        handle_route_request(header=header, data=payload)
+                    case MessageTypes.ROUTE_RESPONSE:
+                        handle_route_response(header=header, data=payload)
+                    case MessageTypes.DATA:
+                        handle_data_packet(header=header,data=payload)
+                    case MessageTypes.SEND_REQUEST:
+                        destination = header["destination_ip"]
+                        text_to_send = payload.decode('utf-8')
+                        handle_send_request(header=header)
+                    case MessageTypes.FLOOD_REQUEST:
+                        handle_flood_request(header, payload)
+                    case MessageTypes.FLOODING:
+                        handle_flooding(header, payload)
+                    case _:
+                        event_logger(f"Unknown message type: {msg_type}")
