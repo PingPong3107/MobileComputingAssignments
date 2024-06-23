@@ -3,6 +3,7 @@ import socket
 from utils import get_local_ip, event_logger, MessageTypes, generate_message
 from uuid import uuid4
 from sender import broadcast_message, send_message_to, send_route_response, forward_data, forward_route_response
+import copy
 
 
 def discover_route(destination: str):
@@ -50,8 +51,17 @@ def handle_route_request(header: dict, data: bytes):
         broadcast_message(packet)
 
 
-# def store_routes(header: dict):
-
+def store_routes(path, local_ip):
+    """
+    Store all partial paths of the received path in the routing table.
+    """
+    partial_path = []
+    for node in path:
+        if partial_path:
+            partial_path.append(node)
+            routes[node] = copy.deepcopy(partial_path)       
+        elif node == local_ip:
+            partial_path.append(node)
 
 
 def handle_route_response(header: dict, data:bytes):
@@ -59,10 +69,10 @@ def handle_route_response(header: dict, data:bytes):
     When receiving a route response, either forward it, or, if you are the source, send the data.
     """
     event_logger(f"Received route response message: {data}")
-    # store_routes(header)
-    if header["path"][0]== get_local_ip():
+    local_ip = get_local_ip()
+    store_routes(header["path"], local_ip)
+    if header["path"][0] == local_ip:
         event_logger("Found Route!")
-        routes[header["source_ip"]] = header["path"]
         send_routed(destination, text_to_send, routes)
     else:
         forward_route_response(header, data)
