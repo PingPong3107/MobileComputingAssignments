@@ -9,7 +9,7 @@ PORT = 5006
 message = sys.argv[1]
 destination = sys.argv[2]
 msg_type = MessageTypes.SEND_REQUEST
-if(sys.argv[3]):
+if(len(sys.argv)==4):
     msg_type = MessageTypes.FLOOD_REQUEST
 
 packet = generate_message(destination, msg_type, message, str(uuid4()))

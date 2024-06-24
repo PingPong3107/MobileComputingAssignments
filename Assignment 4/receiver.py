@@ -103,7 +103,7 @@ def handle_flood_request(header:dict, payload):
     msg = generate_message(
                 header["destination_ip"],
                 MessageTypes.FLOODING,
-                payload,
+                payload.decode('utf-8'),
                 uuid=str(uuid4())
             )
     broadcast_message(msg)
@@ -150,21 +150,21 @@ if __name__ == "__main__":
             if uuid not in received_message_ids:
                 received_message_ids.append(uuid)
                 msg_type = header["type"]
+            
+                if msg_type == MessageTypes.ROUTE_REQUEST:
+                    handle_route_request(header=header, data=payload)
+                elif msg_type == MessageTypes.ROUTE_RESPONSE:
+                    handle_route_response(header=header, data=payload)
+                elif msg_type == MessageTypes.DATA:
+                    handle_data_packet(header=header, data=payload)
+                elif msg_type == MessageTypes.SEND_REQUEST:
+                    destination = header["destination_ip"]
+                    text_to_send = payload.decode('utf-8')
+                    handle_send_request(header=header)
+                elif msg_type == MessageTypes.FLOOD_REQUEST:
+                    handle_flood_request(header, payload)
+                elif msg_type == MessageTypes.FLOODING:
+                    handle_flooding(header, payload)
+                else:
+                    event_logger(f"Unknown message type: {msg_type}")
 
-                match msg_type:
-                    case MessageTypes.ROUTE_REQUEST:
-                        handle_route_request(header=header, data=payload)
-                    case MessageTypes.ROUTE_RESPONSE:
-                        handle_route_response(header=header, data=payload)
-                    case MessageTypes.DATA:
-                        handle_data_packet(header=header,data=payload)
-                    case MessageTypes.SEND_REQUEST:
-                        destination = header["destination_ip"]
-                        text_to_send = payload.decode('utf-8')
-                        handle_send_request(header=header)
-                    case MessageTypes.FLOOD_REQUEST:
-                        handle_flood_request(header, payload)
-                    case MessageTypes.FLOODING:
-                        handle_flooding(header, payload)
-                    case _:
-                        event_logger(f"Unknown message type: {msg_type}")
