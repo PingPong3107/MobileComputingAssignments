@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var team6ref: DatabaseReference
     private lateinit var listView: ListView
     private lateinit var cityList: MutableList<String>
-    private lateinit var cityTemperatureMap: MutableMap<String, Double?>
+    private lateinit var cityTemperatureMap: MutableMap<String, Double>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
         database = Firebase.database
         team6ref = database.getReference("teams").child("6")
         insertTemperatureData("Stuttgart","2011-2-2", System.currentTimeMillis().toString(), 26.0)
+//        deleteTestingStuff()
         fetchCities()
 
 
@@ -74,77 +75,24 @@ class MainActivity : AppCompatActivity() {
             println("Alle Daten gelöscht")
         }
     }
-    private fun fetchLatestTemperature(cityName: String) {
-        val teamId = "6"  // Example team ID
 
-        // Reference to the location node for the specified city
-        val cityRef = team6ref.child("location").child(cityName)
-
-        // Query to find the oldest date node
-        cityRef.orderByKey().limitToFirst(1).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    // Get the oldest date node key (earliest date)
-                    val oldestDate = dataSnapshot.children.firstOrNull()?.key
-
-                    if (oldestDate != null) {
-                        // Reference to the oldest date node for the specified city
-                        val dateRef = cityRef.child(oldestDate)
-
-                        // Query to find the highest time node within the oldest date
-                        dateRef.orderByKey().limitToLast(1).addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onDataChange(timeSnapshot: DataSnapshot) {
-                                // Get the highest time node key (latest time)
-                                val latestTime = timeSnapshot.children.lastOrNull()?.key
-
-                                if (latestTime != null) {
-                                    // Reference to the temperature node for the latest time
-                                    val temperatureRef = dateRef.child(latestTime).child("temperature")
-
-                                    // Fetch the temperature value
-                                    temperatureRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                                        override fun onDataChange(temperatureSnapshot: DataSnapshot) {
-                                            val latestTemperature = temperatureSnapshot.getValue(Double::class.java)
-                                            cityTemperatureMap[cityName] = latestTemperature
-
-                                            // Refresh ListView to update temperature display
-                                            (listView.adapter as ArrayAdapter<*>).notifyDataSetChanged()
-                                        }
-
-                                        override fun onCancelled(databaseError: DatabaseError) {
-                                            Log.e("MainActivity", "Error fetching temperature data", databaseError.toException())
-                                        }
-                                    })
-                                } else {
-                                    // No times found for the oldest date
-                                    cityTemperatureMap[cityName] = null
-                                    (listView.adapter as ArrayAdapter<*>).notifyDataSetChanged()
-                                }
-                            }
-
-                            override fun onCancelled(databaseError: DatabaseError) {
-                                Log.e("MainActivity", "Error fetching time data", databaseError.toException())
-                            }
-                        })
-                    } else {
-                        // No dates found for the city
-                        cityTemperatureMap[cityName] = null
-                        (listView.adapter as ArrayAdapter<*>).notifyDataSetChanged()
-                    }
-                } else {
-                    // No data found for the city
-                    cityTemperatureMap[cityName] = null
-                    (listView.adapter as ArrayAdapter<*>).notifyDataSetChanged()
-                }
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                Log.e("MainActivity", "Error fetching date data", databaseError.toException())
-            }
-        })
-    }
     private fun fetchCities() {
         val citiesRef = team6ref.child("location")
+        // Display the cities in the ListView with temperature
+        val adapter = object : ArrayAdapter<String>(this@MainActivity, R.layout.list_item_city, cityList) {
+            override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
+                val view = super.getView(position, convertView, parent)
+                val cityName = cityList[position]
+                val temperature = cityTemperatureMap[cityName]
+
+                // Append temperature to city name in list item
+                val text = "$cityName - Temperature: ${temperature ?: "N/A"}"
+                (view as android.widget.TextView).text = text
+
+                return view
+            }
+        }
+        listView.adapter = adapter
 
         citiesRef.get().addOnCompleteListener { task ->
             if (task.isSuccessful) {
@@ -160,25 +108,42 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                // Display the cities in the ListView with temperature
-                val adapter = object : ArrayAdapter<String>(this@MainActivity, R.layout.list_item_city, cityList) {
-                    override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
-                        val view = super.getView(position, convertView, parent)
-                        val cityName = cityList[position]
-                        val temperature = cityTemperatureMap[cityName]
 
-                        // Append temperature to city name in list item
-                        val text = "$cityName - Temperature: ${temperature ?: "N/A"}"
-                        (view as android.widget.TextView).text = text
-
-                        return view
-                    }
-                }
-                listView.adapter = adapter
             } else {
                 Log.e("MainActivity", "Error getting data", task.exception)
             }
         }
+    }
+
+    private fun fetchLatestTemperature(cityName: String) {
+        val cityRef = team6ref.child("location").child(cityName)
+        cityRef.orderByKey().limitToLast(1).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val latestDateSnapshot = snapshot.children.first()
+                latestDateSnapshot.ref.orderByKey().limitToLast(1).addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.exists()) {
+                            println("debug alda "+snapshot.children.first().value.toString())
+//                            val latestTemperature = snapshot.children.first().value as Double
+                            cityTemperatureMap[cityName] = 0.0
+                            listView.adapter?.let {
+                                (it as ArrayAdapter<*>).notifyDataSetChanged()
+                            }
+                        } else {
+                            Log.e("MainActivity", "No data for latest time")
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e("MainActivity", "Error getting data for latest time", error.toException())
+                    }
+                })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("MainActivity", "Error getting data for latest date", error.toException())
+            }
+        })
     }
 
 
