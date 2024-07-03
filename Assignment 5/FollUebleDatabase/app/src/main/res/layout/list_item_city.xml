@@ -9,5 +9,5 @@
     android:minHeight="?android:attr/listPreferredItemHeightSmall"
     android:textColor="?android:attr/textColorPrimary"
     android:background="?android:attr/selectableItemBackground"
-    android:clickable="true"
-    android:focusable="true"/>
+    android:clickable="false"
+    android:focusable="false"/>

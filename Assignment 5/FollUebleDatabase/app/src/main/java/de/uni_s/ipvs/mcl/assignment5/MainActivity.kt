@@ -1,13 +1,19 @@
 package de.uni_s.ipvs.mcl.assignment5
 
+import CityTemperatureAdapter
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ListView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -36,6 +42,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var listView: ListView
     private lateinit var cityList: MutableList<String>
     private lateinit var cityTemperatureMap: MutableMap<String, Double>
+
+
+    private lateinit var newCityTemperatureMap: ObservableMutableList<City>
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -45,8 +56,12 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        insertTemperatureButton()
+
         cityList = mutableListOf()
         cityTemperatureMap = mutableMapOf()
+        newCityTemperatureMap = ObservableMutableList()
         listView = findViewById(R.id.listview)
         database = Firebase.database
         team6ref = database.getReference("teams").child("6")
@@ -54,8 +69,22 @@ class MainActivity : AppCompatActivity() {
 //        deleteTestingStuff()
         //fetchCities()
 
+        //addTemperatureToCity("Horra", -6.0)
 
 
+        getDataFromFirebase()
+        val adapter = CityTemperatureAdapter(this, R.layout.list_item_city, newCityTemperatureMap)
+        listView.adapter = adapter
+        listView.onItemClickListener = AdapterView.OnItemClickListener { _, view, position, _ ->
+            val city = adapter.getItem(position)
+            city?.let {
+                city.setSubscribed(!city.isSubscribed())
+                adapter.notifyDataSetChanged()
+            }
+        }
+
+
+        /**
         resetDatabase()
         addTemperatureToCity("Gündelbach", 46.0)
 
@@ -63,6 +92,8 @@ class MainActivity : AppCompatActivity() {
             addTemperatureToCity("Gündelbach", 26.0)
             getDataFromFirebase()
         }, 5000)
+
+        */
 
 
 
@@ -99,17 +130,21 @@ class MainActivity : AppCompatActivity() {
     private fun getDataFromFirebase(){
         team6ref.child("location").get().addOnSuccessListener { dataSnapshot ->
             if (dataSnapshot.exists()) {
-                Log.d("MainActivity", "Data exists")
+                //Log.d("MainActivity", "Data exists")
                 for (citySnapshot in dataSnapshot.children) {
                     val city = citySnapshot.key
-                    Log.d("MainActivity", "City: $city")
+                    val cityObj = City(city.toString())
+                    newCityTemperatureMap.add(cityObj)
+                    //Log.d("MainActivity", "City: $city")
                     for (dateSnapshot in citySnapshot.children) {
                         val date = dateSnapshot.key
-                        Log.d("MainActivity", "Date: $date")
+                        //Log.d("MainActivity", "Date: $date")
                         for (timeSnapshot in dateSnapshot.children) {
-                            val (time, temperature) = timeSnapshot.value.toString().split(":")
+                            var (time, temperature) = timeSnapshot.value.toString().split(":")
+                            cityObj.setCurrentTemperature(temperature)
+                            cityObj.setUpdateTime(time)
 
-                            Log.d("MainActivity", "Time: ${time.toHumanReadableTime()}, Temperature: $temperature")
+                            //Log.d("MainActivity", "Time: ${time.toHumanReadableTime()}, Temperature: $temperature")
                         }
                     }
                 }
@@ -124,6 +159,18 @@ class MainActivity : AppCompatActivity() {
     private fun resetDatabase(){
         team6ref.child("location").removeValue().addOnCompleteListener {
             Log.d("MainActivity", "Alle Daten gelöscht")
+        }
+    }
+
+    private fun insertTemperatureButton(){
+        val button = findViewById<Button>(R.id.insertButton)
+        button.setOnClickListener {val city = findViewById<EditText>(R.id.cityInput).text.toString()
+            val temperature = findViewById<EditText>(R.id.tempInput).text.toString().toDouble()
+            addTemperatureToCity(city, temperature)
+            Toast.makeText(this, "Temperatur für $city hinzugefügt", Toast.LENGTH_SHORT).show()
+            newCityTemperatureMap.clear()
+            getDataFromFirebase()
+
         }
     }
 
