@@ -1,10 +1,15 @@
 package de.uni_s.ipvs.mcl.assignment5
 
+import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -18,6 +23,9 @@ import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,12 +50,84 @@ class MainActivity : AppCompatActivity() {
         listView = findViewById(R.id.listview)
         database = Firebase.database
         team6ref = database.getReference("teams").child("6")
-        insertTemperatureData("Stuttgart","2011-2-2", System.currentTimeMillis().toString(), 26.0)
+        //insertTemperatureData("Stuttgart","2011-2-2", System.currentTimeMillis().toString(), 26.0)
 //        deleteTestingStuff()
-        fetchCities()
+        //fetchCities()
+
+
+
+        resetDatabase()
+        addTemperatureToCity("Gündelbach", 46.0)
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            addTemperatureToCity("Gündelbach", 26.0)
+            getDataFromFirebase()
+        }, 5000)
+
+
+
 
 
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun String.toHumanReadableTime(): String {
+        val millis = this.toLongOrNull() ?: return "Invalid milliseconds"
+        return DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
+            .withZone(ZoneId.systemDefault())
+            .format(Instant.ofEpochMilli(millis))
+    }
+
+    private fun addTemperatureToCity(city: String, temperature: Double){
+        val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val time = System.currentTimeMillis().toString()
+
+        val tempRef = team6ref.child("location").child(city).child(date)
+
+        val string = "$time:$temperature"
+
+        tempRef.push().setValue(string).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("MainActivity", "Temperature data added successfully")
+            } else {
+                Log.e("MainActivity", "Error adding temperature data", task.exception)
+            }
+        }
+    }
+
+    @SuppressLint("NewApi")
+    private fun getDataFromFirebase(){
+        team6ref.child("location").get().addOnSuccessListener { dataSnapshot ->
+            if (dataSnapshot.exists()) {
+                Log.d("MainActivity", "Data exists")
+                for (citySnapshot in dataSnapshot.children) {
+                    val city = citySnapshot.key
+                    Log.d("MainActivity", "City: $city")
+                    for (dateSnapshot in citySnapshot.children) {
+                        val date = dateSnapshot.key
+                        Log.d("MainActivity", "Date: $date")
+                        for (timeSnapshot in dateSnapshot.children) {
+                            val (time, temperature) = timeSnapshot.value.toString().split(":")
+
+                            Log.d("MainActivity", "Time: ${time.toHumanReadableTime()}, Temperature: $temperature")
+                        }
+                    }
+                }
+            } else {
+                Log.e("MainActivity", "No data found")
+            }
+        }.addOnFailureListener {
+            Log.e("MainActivity", "Error getting data", it)
+        }
+    }
+
+    private fun resetDatabase(){
+        team6ref.child("location").removeValue().addOnCompleteListener {
+            Log.d("MainActivity", "Alle Daten gelöscht")
+        }
+    }
+
+
 
     private fun insertTemperatureData(city: String, date: String, time: String, temperature: Double) {
         team6ref.child("location").child(city).child(date).child(time).setValue(temperature)
