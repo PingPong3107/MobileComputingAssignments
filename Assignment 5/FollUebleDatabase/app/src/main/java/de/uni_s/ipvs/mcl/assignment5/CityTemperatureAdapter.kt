@@ -1,3 +1,4 @@
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.view.LayoutInflater
@@ -24,6 +25,7 @@ class CityTemperatureAdapter(context: Context, resource: Int, private val cityLi
         cityList.addObserver { notifyDataSetChanged() }
         res = resource
     }
+    @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view: View = convertView ?: LayoutInflater.from(context).inflate(res, parent, false)
@@ -34,19 +36,16 @@ class CityTemperatureAdapter(context: Context, resource: Int, private val cityLi
         val time = city.getUpdateTime()
         val avgTemp = city.getAverageTemperature()
 
-        // Append temperature to city name in list item
         val text1 = view.findViewById<View>(android.R.id.text1) as TextView
         val text2 = view.findViewById<View>(android.R.id.text2) as TextView
 
-        text1.setText(cityName)
-        text2.setText("Current: $temperature, Avg: $avgTemp,\nChanged: $time")
+        text1.text = cityName
+        text2.text = "Current: $temperature, Avg: $avgTemp,\nChanged: $time"
         if (city.subscribed.value == true) {
-            text2.setVisibility(View.VISIBLE);
+            text2.visibility = View.VISIBLE;
         } else {
-            text2.setVisibility(View.GONE);
+            text2.visibility = View.GONE;
         }
-        //(view as TextView).text = text
-
 
         return view
     }
