@@ -4,21 +4,19 @@ import CityTemperatureAdapter
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -27,11 +25,12 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,8 +39,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var database:FirebaseDatabase
     private lateinit var team6ref: DatabaseReference
     private lateinit var listView: ListView
-    private lateinit var cityList: MutableList<String>
-    private lateinit var cityTemperatureMap: MutableMap<String, Double>
 
 
     private lateinit var newCityTemperatureMap: ObservableMutableList<City>
@@ -59,20 +56,20 @@ class MainActivity : AppCompatActivity() {
 
         insertTemperatureButton()
 
-        cityList = mutableListOf()
-        cityTemperatureMap = mutableMapOf()
         newCityTemperatureMap = ObservableMutableList()
         listView = findViewById(R.id.listview)
         database = Firebase.database
         team6ref = database.getReference("teams").child("6")
         //insertTemperatureData("Stuttgart","2011-2-2", System.currentTimeMillis().toString(), 26.0)
 //        deleteTestingStuff()
-        //fetchCities()
+
 
         //addTemperatureToCity("Horra", -6.0)
 
 
-        getDataFromFirebase()
+        //getDataFromFirebase()
+        fetchCities()
+
         val adapter = CityTemperatureAdapter(this, R.layout.list_item_city, newCityTemperatureMap)
         listView.adapter = adapter
         listView.onItemClickListener = AdapterView.OnItemClickListener { _, view, position, _ ->
@@ -168,8 +165,6 @@ class MainActivity : AppCompatActivity() {
             val temperature = findViewById<EditText>(R.id.tempInput).text.toString().toDouble()
             addTemperatureToCity(city, temperature)
             Toast.makeText(this, "Temperatur für $city hinzugefügt", Toast.LENGTH_SHORT).show()
-            newCityTemperatureMap.clear()
-            getDataFromFirebase()
 
         }
     }
@@ -206,25 +201,48 @@ class MainActivity : AppCompatActivity() {
     private fun fetchCities() {
         val citiesRef = team6ref.child("location")
         // Display the cities in the ListView with temperature
-        val adapter = object : ArrayAdapter<String>(this@MainActivity, R.layout.list_item_city, cityList) {
-            override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
-                val view = super.getView(position, convertView, parent)
-                val cityName = cityList[position]
-                val temperature = cityTemperatureMap[cityName]
 
-                // Append temperature to city name in list item
-                val text = "$cityName - Temperature: ${temperature ?: "N/A"}"
-                (view as android.widget.TextView).text = text
 
-                return view
+
+        citiesRef.addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
+                // This will be called for each child node initially and for new child nodes
+                // when they are added
+                val cityName = dataSnapshot.key
+                cityName?.let {
+                    var city: City = City(cityName)
+                    fetchLatestTemperature(city)
+                }
+                // Do something with the object
             }
-        }
-        listView.adapter = adapter
 
-        citiesRef.get().addOnCompleteListener { task ->
+            override fun onChildChanged(
+                dataSnapshot: DataSnapshot,
+                previousChildName: String?
+            ) {
+                // This will be called for changes to the child nodes
+            }
+
+            override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+                // This will be called when a child node is removed
+            }
+
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+                //braucht keyn Mensch
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("MainActivity","Äbbas isch henich: $databaseError")
+            }
+        })
+
+
+
+
+            /**
+            task ->
             if (task.isSuccessful) {
-                cityList.clear()
-                cityTemperatureMap.clear()
+                newCityTemperatureMap.clear()
 
                 val dataSnapshot = task.result
                 for (citySnapshot in dataSnapshot.children) {
@@ -238,12 +256,12 @@ class MainActivity : AppCompatActivity() {
 
             } else {
                 Log.e("MainActivity", "Error getting data", task.exception)
-            }
+            }*/
         }
-    }
 
-    private fun fetchLatestTemperature(cityName: String) {
-        val cityRef = team6ref.child("location").child(cityName)
+
+    private fun fetchLatestTemperature(city: City) {
+        val cityRef = team6ref.child("location").child(city.getCityName())
         cityRef.orderByKey().limitToLast(1).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val latestDateSnapshot = snapshot.children.first()
@@ -252,10 +270,13 @@ class MainActivity : AppCompatActivity() {
                         if (snapshot.exists()) {
                             println("debug alda "+snapshot.children.first().value.toString())
 //                            val latestTemperature = snapshot.children.first().value as Double
-                            cityTemperatureMap[cityName] = 0.0
-                            listView.adapter?.let {
-                                (it as ArrayAdapter<*>).notifyDataSetChanged()
+                            var (time, temperature) = snapshot.children.first().value.toString().split(":")
+                            city.setCurrentTemperature(temperature)
+                            city.setUpdateTime(time)
+                            if(!newCityTemperatureMap.contains(city)){
+                                newCityTemperatureMap.add(city)
                             }
+
                         } else {
                             Log.e("MainActivity", "No data for latest time")
                         }

@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.reflect.typeOf
 
 class City(private var name: String){
 
@@ -85,6 +86,13 @@ class City(private var name: String){
 
     override fun toString(): String {
         return getCityName()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        when(other){
+            is City -> return this.getCityName() == other.getCityName()
+        }
+        return false
     }
 
 }
