@@ -35,12 +35,18 @@ class City(private var name: String){
         return name
     }
 
-    fun getCurrentTemperature(): Double? {
-        return _currentTemperature.value
+    fun getCurrentTemperature(): String {
+        if (_currentTemperature.value == null) {
+            return "N/A"
+        }
+        return "${_currentTemperature.value.toString()}\u2103"
     }
 
-    fun getAverageTemperature(): Double? {
-        return _averageTemperature.value
+    fun getAverageTemperature(): String {
+        if (_averageTemperature.value == null) {
+            return "N/A"
+        }
+        return "${_averageTemperature.value.toString()}\u2103"
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

@@ -211,7 +211,7 @@ class MainActivity : AppCompatActivity() {
                 // when they are added
                 val cityName = dataSnapshot.key
                 cityName?.let {
-                    var city: City = City(cityName)
+                    val city: City = City(cityName)
                     fetchLatestTemperature(city)
                 }
                 // Do something with the object
