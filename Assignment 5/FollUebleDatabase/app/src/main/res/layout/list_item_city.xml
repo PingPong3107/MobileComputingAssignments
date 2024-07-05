@@ -25,5 +25,6 @@
         android:textColor="?android:attr/textColorSecondary"
         android:background="?android:attr/selectableItemBackground"
         android:clickable="false"
-        android:focusable="false" />
+        android:focusable="false"
+        android:visibility="gone" />
 </LinearLayout>

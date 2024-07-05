@@ -35,18 +35,15 @@ class CityTemperatureAdapter(context: Context, resource: Int, private val cityLi
         val avgTemp = city.getAverageTemperature()
 
         // Append temperature to city name in list item
+        val text1 = view.findViewById<View>(android.R.id.text1) as TextView
+        val text2 = view.findViewById<View>(android.R.id.text2) as TextView
+
+        text1.setText(cityName)
+        text2.setText("Current: $temperature, Avg: $avgTemp,\nChanged: $time")
         if (city.subscribed.value == true) {
-            val text1 = view.findViewById<View>(android.R.id.text1) as TextView
-            val text2 = view.findViewById<View>(android.R.id.text2) as TextView
-
-            text1.setText(cityName)
-            text2.setText("Current: $temperature, Avg: $avgTemp,\nChanged: $time")
+            text2.setVisibility(View.VISIBLE);
         } else {
-            val text1 = view.findViewById<View>(android.R.id.text1) as TextView
-            val text2 = view.findViewById<View>(android.R.id.text2) as TextView
-
-            text1.setText(cityName)
-            text2.setText("")
+            text2.setVisibility(View.GONE);
         }
         //(view as TextView).text = text
 
