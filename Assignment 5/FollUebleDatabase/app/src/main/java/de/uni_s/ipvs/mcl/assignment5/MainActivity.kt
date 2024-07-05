@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var database:FirebaseDatabase
     private lateinit var team6ref: DatabaseReference
     private lateinit var listView: ListView
+    private lateinit var adapter: CityTemperatureAdapter
 
 
     private lateinit var newCityTemperatureMap: ObservableMutableList<City>
@@ -70,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         //getDataFromFirebase()
         fetchCities()
 
-        val adapter = CityTemperatureAdapter(this, R.layout.list_item_city, newCityTemperatureMap)
+        adapter = CityTemperatureAdapter(this, R.layout.list_item_city, newCityTemperatureMap)
         listView.adapter = adapter
         listView.onItemClickListener = AdapterView.OnItemClickListener { _, view, position, _ ->
             val city = adapter.getItem(position)
@@ -220,7 +221,16 @@ class MainActivity : AppCompatActivity() {
                 dataSnapshot: DataSnapshot,
                 previousChildName: String?
             ) {
-                // This will be called for changes to the child nodes
+                println("data changeDDDDDDDDD")
+                val cityName = dataSnapshot.key
+                cityName?.let {
+                    for(c in newCityTemperatureMap){
+                        if (cityName == c.getCityName()){
+                            fetchLatestTemperature(c)
+                        }
+                    }
+
+                }
             }
 
             override fun onChildRemoved(dataSnapshot: DataSnapshot) {
@@ -276,6 +286,7 @@ class MainActivity : AppCompatActivity() {
                             if(!newCityTemperatureMap.contains(city)){
                                 newCityTemperatureMap.add(city)
                             }
+                            adapter.notifyDataSetChanged()
 
                         } else {
                             Log.e("MainActivity", "No data for latest time")
