@@ -1,8 +1,12 @@
 package de.uni_s.ipvs.mcl.assignment5
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.Button
 import android.widget.EditText
@@ -65,6 +69,7 @@ class MainActivity : AppCompatActivity() {
         database = Firebase.database
         team6ref = database.getReference("teams").child("6")
         fetchCities()
+        inputFieldNavigation()
 
         adapter = CityTemperatureAdapter(this, R.layout.list_item_city, cityList)
         listView.adapter = adapter
@@ -74,6 +79,54 @@ class MainActivity : AppCompatActivity() {
                 city.setSubscribed(!city.isSubscribed())
                 adapter.notifyDataSetChanged()
             }
+        }
+    }
+
+    /**
+     * This function assigns editor action listeners to the input fields.
+     *
+     * The editor action listener for the city input field is assigned to focus the temperature input field.
+     * The editor action listener for the temperature input field is assigned to add the temperature to the city.
+     * The keyboard is closed after the temperature is added.
+     * @see closeKeyboard
+     * @see checkInputAndAddCity
+     */
+    private fun inputFieldNavigation(){
+        val cityInput = findViewById<EditText>(R.id.cityInput)
+        val tempInput = findViewById<EditText>(R.id.tempInput)
+
+        cityInput.setOnEditorActionListener{ v, actionId, event ->
+            if(actionId == EditorInfo.IME_ACTION_NEXT ||
+                event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER){
+                tempInput.requestFocus()
+                true
+            } else {
+                false
+            }
+        }
+
+        tempInput.setOnEditorActionListener{ v, actionId, event ->
+            if(actionId == EditorInfo.IME_ACTION_DONE ||
+                event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER){
+                val city = cityInput.text.toString()
+                val temp = tempInput.text.toString()
+                checkInputAndAddCity(city, temp)
+                closeKeyboard()
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    /**
+     * This function closes the keyboard.
+     */
+    private fun closeKeyboard() {
+        val view = this.currentFocus
+        if (view != null) {
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
 
@@ -89,15 +142,20 @@ class MainActivity : AppCompatActivity() {
         val button = findViewById<Button>(R.id.insertButton)
         button.setOnClickListener {
             val city = findViewById<EditText>(R.id.cityInput).text.toString()
-            val tempStr = findViewById<EditText>(R.id.tempInput).text.toString()
-            if (city != "" && tempStr != "" && city.matches("[a-zA-ZäöüÄÖÜß -]*".toRegex())) {
-                val temperature = tempStr.toDouble()
-                addTemperatureToCity(city, temperature)
-                Toast.makeText(this, String.format(getString(R.string.tempAddedToCity), city), Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, getString(R.string.tempAddedToCityErr), Toast.LENGTH_SHORT).show()
-            }
+            val temp = findViewById<EditText>(R.id.tempInput).text.toString()
+            checkInputAndAddCity(city, temp)
+        }
+    }
 
+    private fun checkInputAndAddCity(city: String, temp: String){
+        if (city != "" && temp != "" && city.matches("[a-zA-ZäöüÄÖÜß -]*".toRegex())) {
+            val temperature = temp.toDouble()
+            addTemperatureToCity(city, temperature)
+            Toast.makeText(this, String.format(getString(R.string.tempAddedToCity), city), Toast.LENGTH_SHORT).show()
+            findViewById<EditText>(R.id.cityInput).setText("")
+            findViewById<EditText>(R.id.tempInput).setText("")
+        } else {
+            Toast.makeText(this, getString(R.string.tempAddedToCityErr), Toast.LENGTH_SHORT).show()
         }
     }
 
