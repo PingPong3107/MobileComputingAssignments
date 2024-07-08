@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() {
         button.setOnClickListener {
             val city = findViewById<EditText>(R.id.cityInput).text.toString()
             val tempStr = findViewById<EditText>(R.id.tempInput).text.toString()
-            if (city != "" && tempStr != "" && city.matches("[a-zA-Z]*".toRegex())){
+            if (city != "" && tempStr != "" && city.matches("[a-zA-ZäöüÄÖÜ -]*".toRegex())){
                 val temperature = tempStr.toDouble()
                 addTemperatureToCity(city, temperature)
                 Toast.makeText(this, "Temperatur für $city hinzugefügt", Toast.LENGTH_SHORT).show()
@@ -118,22 +118,25 @@ class MainActivity : AppCompatActivity() {
         val citiesRef = team6ref.child("location")
         citiesRef.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
-                val cityName = dataSnapshot.key
-                cityName?.let {
-                    fetchLatestTemperature(City(cityName))
-                }
+                //val cityName = dataSnapshot.key
+                //cityName?.let {
+                //    fetchLatestTemperature(City(cityName))
+                //}
+                handleCitySnapshot(dataSnapshot)
             }
 
             override fun onChildChanged(dataSnapshot: DataSnapshot, previousChildName: String?) {
-                val cityName = dataSnapshot.key
-                cityName?.let {
-                    for(c in cityList){
-                        if (cityName == c.getCityName()){
-                            fetchLatestTemperature(c)
-                        }
-                    }
+                //val cityName = dataSnapshot.key
+                //cityName?.let {
+                //    for(c in cityList){
+                //        if (cityName == c.getCityName()){
+                //            fetchLatestTemperature(c)
+                //        }
+                //    }
 
-                }
+
+                //}
+                handleCitySnapshot(dataSnapshot)
             }
 
             override fun onChildRemoved(dataSnapshot: DataSnapshot) {
@@ -150,12 +153,46 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun handleCitySnapshot(dataSnapshot: DataSnapshot) {
+        val cityName = dataSnapshot.key
+        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()).toString()
+        cityName?.let {
+            val latestDateSnapshot = dataSnapshot.children.lastOrNull()
+            latestDateSnapshot?.let { dateSnapshot ->
+                if (dateSnapshot.key != currentDate){
+                    return
+                }
+                val latestEntrySnapshot = dateSnapshot.children.lastOrNull()
+                latestEntrySnapshot?.let { entrySnapshot ->
+                    val latestEntry = entrySnapshot.value.toString()
+                    try {
+                        val (time, temperature) = latestEntry.split(":")
+                        val city = cityList.find { it.getCityName() == cityName } ?: City(cityName)
+                        city.setCurrentTemperature(temperature)
+                        city.setUpdateTime(time)
+                        if (!cityList.contains(city)) {
+                            cityList.add(city)
+                        }
+                        adapter.notifyDataSetChanged()
+                    } catch (e: Exception) {
+                        Log.e("MainActivity", "Error parsing latest entry", e)
+                        Toast.makeText(this, "Error parsing latest entry", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
 
     private fun fetchLatestTemperature(city: City) {
         val cityRef = team6ref.child("location").child(city.getCityName())
         cityRef.orderByKey().limitToLast(1).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val latestDateSnapshot = snapshot.children.first()
+                val latestDate = latestDateSnapshot.key
+                if (latestDate != SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()).toString()){
+                    return
+                }
                 latestDateSnapshot.ref.orderByKey().limitToLast(1).addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         if (snapshot.exists()) {
