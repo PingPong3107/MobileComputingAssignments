@@ -2,100 +2,147 @@ package de.uni_s.ipvs.mcl.assignment5
 
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.lifecycle.MutableLiveData
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 import kotlin.math.round
-import kotlin.reflect.typeOf
 
+/**
+ * This Class represents a city with its current and average temperature.
+ *
+ * @property name The name of the city.
+ * @property currentTemperature The current temperature of the city.
+ * @property averageTemperature The average temperature of the city.
+ * @property updateTime The time when the temperature was last updated.
+ * @property subscribed A flag indicating whether the city is subscribed or not.
+ */
 class City(private var name: String){
+    private var currentTemperature: Double? = null
+    private var averageTemperature: Double? = null
+    private var updateTime: String? = null
+    private var subscribed: Boolean = false
 
-    private val _currentTemperature = MutableLiveData<Double>()
-    val currentTemperature: MutableLiveData<Double> get() = _currentTemperature
-
-    private val _averageTemperature = MutableLiveData<Double>()
-    val averageTemperature: MutableLiveData<Double> get() = _averageTemperature
-
-    private val _updateTime = MutableLiveData<String>()
-    val updateTime: MutableLiveData<String> get() = _updateTime
-
-    private val _subscribed = MutableLiveData<Boolean>(false)
-    val subscribed: MutableLiveData<Boolean> get() = _subscribed
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun String.toHumanReadableTime(): String {
+    /**
+     * This function converts a string representing milliseconds to a human readable time.
+     */
+    private fun String.toHumanReadableTime(): String {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
+            val millis = this.toLongOrNull() ?: return "Invalid milliseconds"
+            val formatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
+            return formatter.format(Date(millis))
+        }
         val millis = this.toLongOrNull() ?: return "Invalid milliseconds"
         return DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
             .withZone(ZoneId.systemDefault())
             .format(Instant.ofEpochMilli(millis))
     }
 
+    /**
+     * This function returns the name of the city.
+     */
     fun getCityName(): String {
         return name
     }
 
+    /**
+     * This function returns the current temperature of the city.
+     */
     fun getCurrentTemperature(): String {
-        if (_currentTemperature.value == null) {
+        if (currentTemperature == null) {
             return "N/A"
         }
-        return "${_currentTemperature.value.toString()}\u2103"
+        return "${currentTemperature}\u2103"
     }
 
+    /**
+     * This function returns the average temperature of the city.
+     */
     fun getAverageTemperature(): String {
-        if (_averageTemperature.value == null) {
+        if (averageTemperature == null) {
             return "N/A"
         }
-        return "${_averageTemperature.value.toString()}\u2103"
+        return "${averageTemperature}\u2103"
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    /**
+     * This function returns the time when the temperature was last updated.
+     */
     fun getUpdateTime(): String {
-        if (_updateTime.value == "") {
+        if (updateTime == "") {
             return "N/A"
         }
-        return _updateTime.value?.toHumanReadableTime() ?: "N/A"
+        return updateTime?.toHumanReadableTime() ?: "N/A"
     }
 
+    /**
+     * This function sets the current temperature of the city.
+     *
+     * @param temperature The current temperature of the city.
+     */
     fun setCurrentTemperature(temperature: String) {
-        val currentTemp = try {
+        currentTemperature = try {
             temperature.toDouble()
         } catch (e: NumberFormatException) {
             null
         }
-        _currentTemperature.value = currentTemp
     }
 
+    /**
+     * This function sets the average temperature of the city.
+     *
+     * @param temperature The average temperature of the city.
+     */
     fun setAverageTemperature(temperature: String) {
-        val averageTemp = try {
+        averageTemperature = try {
             round(temperature.toDouble()*100)/100
 
         } catch (e: NumberFormatException) {
             null
         }
-        _averageTemperature.value = averageTemp
-
     }
 
+    /**
+     * This function sets the time when the temperature was last updated.
+     *
+     * @param time The time when the temperature was last updated.
+     */
     fun setUpdateTime(time: String) {
-        _updateTime.value = time
+        updateTime = time
     }
 
-    fun setSubscribed(subscribed: Boolean) {
+    /**
+     * This function sets the subscription status of the city.
+     *
+     * @param sub The subscription status of the city.
+     */
+    fun setSubscribed(sub: Boolean) {
         Log.d("City", "setSubscribed: $subscribed")
-        _subscribed.value = subscribed
-        Log.d("City", "setSubscribed: ${_subscribed.value}")
+        subscribed = sub
+        Log.d("City", "setSubscribed: $subscribed")
     }
 
+    /**
+     * This function returns the subscription status of the city.
+     */
     fun isSubscribed(): Boolean {
-        return _subscribed.value ?: false
+        return subscribed
     }
 
+    /**
+     * This function returns a string representation of the city.
+     */
     override fun toString(): String {
         return getCityName()
     }
 
+    /**
+     * This function checks if two cities are equal.
+     *
+     * @param other The other city to compare.
+     */
     override fun equals(other: Any?): Boolean {
         when(other){
             is City -> return this.getCityName() == other.getCityName()
@@ -103,4 +150,15 @@ class City(private var name: String){
         return false
     }
 
+    /**
+     * This function returns the hash code of the city.
+     */
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + (currentTemperature?.hashCode() ?: 0)
+        result = 31 * result + (averageTemperature?.hashCode() ?: 0)
+        result = 31 * result + (updateTime?.hashCode() ?: 0)
+        result = 31 * result + subscribed.hashCode()
+        return result
+    }
 }

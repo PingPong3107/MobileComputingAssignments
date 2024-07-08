@@ -1,8 +1,5 @@
 package de.uni_s.ipvs.mcl.assignment5
 
-import CityTemperatureAdapter
-import android.annotation.SuppressLint
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.AdapterView
@@ -11,7 +8,6 @@ import android.widget.EditText
 import android.widget.ListView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -20,28 +16,31 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
-
+/**
+ * This class represents the main activity of the application.
+ *
+ * The main activity fetches the cities from the Firebase database and updates the current and average temperature.
+ * The user can add a temperature to a city and subscribe to a city.
+ * The user can see the current and average temperature of a city and the time of the last update.
+ */
 class MainActivity : AppCompatActivity() {
-
-
-
-    private lateinit var database:FirebaseDatabase
+    private lateinit var database: FirebaseDatabase
     private lateinit var team6ref: DatabaseReference
     private lateinit var listView: ListView
     private lateinit var adapter: CityTemperatureAdapter
     private lateinit var cityList: ObservableMutableList<City>
 
-
+    /**
+     * This function is called when the activity is created.
+     *
+     * In this function, the database and the city adapter are initialized.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -58,12 +57,11 @@ class MainActivity : AppCompatActivity() {
         listView = findViewById(R.id.listview)
         database = Firebase.database
         team6ref = database.getReference("teams").child("6")
-        //resetDatabase()
         fetchCities()
 
         adapter = CityTemperatureAdapter(this, R.layout.list_item_city, cityList)
         listView.adapter = adapter
-        listView.onItemClickListener = AdapterView.OnItemClickListener { _, view, position, _ ->
+        listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
             val city = adapter.getItem(position)
             city?.let {
                 city.setSubscribed(!city.isSubscribed())
@@ -72,13 +70,43 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun addTemperatureToCity(city: String, temperature: Double){
+    /**
+     * Sets a click listener on the insert button to add a temperature to a city.
+     *
+     * The city name and temperature are read from the input fields.
+     * The temperature is added to the city in the Firebase database.
+     * A toast message is shown to the user to indicate success or failure.
+     * Illegal input is detected and a toast message is shown to the user.
+     */
+    private fun insertTemperatureButton() {
+        val button = findViewById<Button>(R.id.insertButton)
+        button.setOnClickListener {
+            val city = findViewById<EditText>(R.id.cityInput).text.toString()
+            val tempStr = findViewById<EditText>(R.id.tempInput).text.toString()
+            if (city != "" && tempStr != "" && city.matches("[a-zA-ZäöüÄÖÜ -]*".toRegex())) {
+                val temperature = tempStr.toDouble()
+                addTemperatureToCity(city, temperature)
+                Toast.makeText(this, "Temperatur für $city hinzugefügt", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Illegal input", Toast.LENGTH_SHORT).show()
+            }
 
+        }
+    }
+
+    /**
+     * This function adds a temperature to a city in the Firebase database.
+     *
+     * The temperature is added to the city for the current date.
+     * @param city The name of the city to add the temperature to.
+     * @param temperature The temperature to add to the city.
+     * @see fetchCities
+     */
+    private fun addTemperatureToCity(city: String, temperature: Double) {
         val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         val time = System.currentTimeMillis().toString()
 
         val tempRef = team6ref.child("location").child(city).child(date)
-
         val string = "$time:$temperature"
 
         tempRef.push().setValue(string).addOnCompleteListener { task ->
@@ -90,87 +118,73 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun resetDatabase(){
-        team6ref.child("location").removeValue().addOnCompleteListener {
-            Log.d("MainActivity", "Alle Daten gelöscht")
-        }
-    }
-
-    private fun insertTemperatureButton(){
-        val button = findViewById<Button>(R.id.insertButton)
-        button.setOnClickListener {
-            val city = findViewById<EditText>(R.id.cityInput).text.toString()
-            val tempStr = findViewById<EditText>(R.id.tempInput).text.toString()
-            if (city != "" && tempStr != "" && city.matches("[a-zA-ZäöüÄÖÜ -]*".toRegex())){
-                val temperature = tempStr.toDouble()
-                addTemperatureToCity(city, temperature)
-                Toast.makeText(this, "Temperatur für $city hinzugefügt", Toast.LENGTH_SHORT).show()
-            }
-            else{
-                Toast.makeText(this, "Illegal input", Toast.LENGTH_SHORT).show()
-            }
-
-        }
-    }
-
-
+    /**
+     * This function fetches the cities from the Firebase database.
+     *
+     * The cities are fetched from the Firebase database and the current temperature and average temperature are updated.
+     * The cities are added to the cityList and the adapter is notified of the changes.
+     * @see handleCitySnapshot
+     */
     private fun fetchCities() {
         val citiesRef = team6ref.child("location")
         citiesRef.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
-                //val cityName = dataSnapshot.key
-                //cityName?.let {
-                //    fetchLatestTemperature(City(cityName))
-                //}
                 handleCitySnapshot(dataSnapshot)
             }
 
             override fun onChildChanged(dataSnapshot: DataSnapshot, previousChildName: String?) {
-                //val cityName = dataSnapshot.key
-                //cityName?.let {
-                //    for(c in cityList){
-                //        if (cityName == c.getCityName()){
-                //            fetchLatestTemperature(c)
-                //        }
-                //    }
-
-
-                //}
                 handleCitySnapshot(dataSnapshot)
             }
 
             override fun onChildRemoved(dataSnapshot: DataSnapshot) {
-                //braucht keyn Mensch
+                Log.i("MainActivity", "City removal not implemented")
             }
 
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-                //braucht keyn Mensch
+                Log.i("MainActivity", "City move not implemented")
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                Log.e("MainActivity","Äbbas isch henich: $databaseError")
+                Log.e("MainActivity", "Äbbas isch henich: $databaseError")
             }
         })
     }
 
+    /**
+     * This function handles a snapshot of a city from the Firebase database.
+     *
+     * The latest temperature entry for the city is updated.
+     * The average temperature for the city is updated.
+     * @param dataSnapshot The snapshot of the city from the Firebase database.
+     * @see updateOrAddCityTemperature
+     * @see updateAverageTemperature
+     */
     private fun handleCitySnapshot(dataSnapshot: DataSnapshot) {
         val cityName = dataSnapshot.key
-        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()).toString()
+        val currentDate =
+            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()).toString()
         cityName?.let {
             val latestDateSnapshot = dataSnapshot.children.lastOrNull()
             latestDateSnapshot?.let { dateSnapshot ->
-                if (dateSnapshot.key != currentDate){
+                if (dateSnapshot.key != currentDate) {
                     return
                 }
-
                 updateOrAddCityTemperature(cityName, dateSnapshot)
                 updateAverageTemperature(cityName, dateSnapshot)
-
             }
-
         }
     }
 
+    /**
+     * This function updates the latest temperature entry for a city.
+     *
+     * The latest temperature entry for the city is updated.
+     * If the city is not in the cityList, it is added.
+     * The adapter is notified of the changes.
+     * @param cityName The name of the city to update.
+     * @param dateSnapshot The snapshot of the latest temperature entries for the city.
+     * @see City
+     */
     private fun updateOrAddCityTemperature(cityName: String, dateSnapshot: DataSnapshot) {
         val latestEntrySnapshot = dateSnapshot.children.lastOrNull()
         latestEntrySnapshot?.let { entrySnapshot ->
@@ -191,6 +205,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This function updates the average temperature for a city.
+     *
+     * The average temperature for the city is updated.
+     * The city is found in the cityList and the average temperature is set.
+     * The adapter is notified of the changes.
+     * @param cityName The name of the city to update.
+     * @param dateSnapshot The snapshot of the latest temperature entries for the city.
+     * @see City
+     */
     private fun updateAverageTemperature(cityName: String, dateSnapshot: DataSnapshot) {
         val temperatures = dateSnapshot.children.mapNotNull { entrySnapshot ->
             val entry = entrySnapshot.value.toString()
@@ -208,47 +232,12 @@ class MainActivity : AppCompatActivity() {
         adapter.notifyDataSetChanged()
     }
 
-
-
-    private fun fetchLatestTemperature(city: City) {
-        val cityRef = team6ref.child("location").child(city.getCityName())
-        cityRef.orderByKey().limitToLast(1).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val latestDateSnapshot = snapshot.children.first()
-                val latestDate = latestDateSnapshot.key
-                if (latestDate != SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()).toString()){
-                    return
-                }
-                latestDateSnapshot.ref.orderByKey().limitToLast(1).addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        if (snapshot.exists()) {
-                            val (time, temperature) = snapshot.children.first().value.toString().split(":")
-                            city.setCurrentTemperature(temperature)
-                            city.setUpdateTime(time)
-                            if(!cityList.contains(city)){
-                                cityList.add(city)
-                            }
-                            adapter.notifyDataSetChanged()
-
-                        } else {
-                            Log.e("MainActivity", "No data for latest time")
-                        }
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        Log.e("MainActivity", "Error getting data for latest time", error.toException())
-                    }
-                })
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("MainActivity", "Error getting data for latest date", error.toException())
-            }
-        })
+    /**
+     * This function resets the Firebase database.
+     */
+    private fun resetDatabase() {
+        team6ref.child("location").removeValue().addOnCompleteListener {
+            Log.d("MainActivity", "All Data deleted successfully")
+        }
     }
-
-
 }
-
-
-
