@@ -1,5 +1,6 @@
 package de.uni_s.ipvs.mcl.assignment5
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.widget.AdapterView
@@ -9,6 +10,7 @@ import android.widget.ListView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.database.ChildEventListener
@@ -51,6 +53,11 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        toolbar.title = getString(R.string.app_name)
+        toolbar.setTitleTextColor(Color.BLACK)
+
         insertTemperatureButton()
 
         cityList = ObservableMutableList()
@@ -83,12 +90,12 @@ class MainActivity : AppCompatActivity() {
         button.setOnClickListener {
             val city = findViewById<EditText>(R.id.cityInput).text.toString()
             val tempStr = findViewById<EditText>(R.id.tempInput).text.toString()
-            if (city != "" && tempStr != "" && city.matches("[a-zA-ZäöüÄÖÜ -]*".toRegex())) {
+            if (city != "" && tempStr != "" && city.matches("[a-zA-ZäöüÄÖÜß -]*".toRegex())) {
                 val temperature = tempStr.toDouble()
                 addTemperatureToCity(city, temperature)
-                Toast.makeText(this, "Temperatur für $city hinzugefügt", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, String.format(getString(R.string.tempAddedToCity), city), Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Illegal input", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.tempAddedToCityErr), Toast.LENGTH_SHORT).show()
             }
 
         }
@@ -145,7 +152,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                Log.e("MainActivity", "Äbbas isch henich: $databaseError")
+                Log.e("MainActivity", "Database error occurred: $databaseError")
             }
         })
     }
@@ -200,7 +207,7 @@ class MainActivity : AppCompatActivity() {
                 adapter.notifyDataSetChanged()
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error parsing latest entry", e)
-                Toast.makeText(this, "Error parsing latest entry", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.parsingError), Toast.LENGTH_SHORT).show()
             }
         }
     }

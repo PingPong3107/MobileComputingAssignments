@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">FollUebleDatabase</string>
+    <string name="insertButtonText">Insert</string>
+    <string name="city">City</string>
+    <string name="temperature">Temperature</string>
+    <string name="tempAddedToCity">Temperature added for city \'%s\'</string>
+    <string name="tempAddedToCityErr">Illegal Input</string>
+    <string name="parsingError">Error while parsing the temperature</string>
+    <string name="cityInfo">Current: %s, Avg: %s,\nChanged: %s</string>
 </resources>

@@ -34,23 +34,21 @@
 
             <EditText
                 android:id="@+id/cityInput"
-                android:hint="City"
+                android:autofillHints="cityName"
+                android:hint="@string/city"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_row="0"
-                android:layout_column="0"
                 android:inputType="text"
                 android:layout_gravity="fill"/>
 
             <EditText
                 android:id="@+id/tempInput"
-                android:hint="Temperature"
+                android:autofillHints="cityTemperature"
+                android:hint="@string/temperature"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_row="0"
-                android:layout_column="1"
                 android:inputType="numberDecimal|numberSigned"
                 android:layout_gravity="fill"/>
         </LinearLayout>
@@ -63,7 +61,7 @@
             android:layout_column="0"
             android:layout_columnSpan="2"
             android:layout_gravity="fill"
-            android:text="INSERT"/>
+            android:text="@string/insertButtonText"/>
 
     </GridLayout>
 

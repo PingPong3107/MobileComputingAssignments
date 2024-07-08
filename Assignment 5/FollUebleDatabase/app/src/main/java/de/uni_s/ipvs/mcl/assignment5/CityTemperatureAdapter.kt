@@ -10,8 +10,8 @@ import android.widget.TextView
 /**
  * This class represents an adapter for the city list.
  *
- * @property context The context of the adapter.
- * @property resource The resource of the adapter.
+ * @param context The context of the adapter.
+ * @param resource The resource of the adapter.
  * @property cityList The list of cities.
  */
 class CityTemperatureAdapter(context: Context, resource: Int, private val cityList: ObservableMutableList<City>) : ArrayAdapter<City>(context, resource, cityList) {
@@ -19,7 +19,7 @@ class CityTemperatureAdapter(context: Context, resource: Int, private val cityLi
     private var res: Int = 0
 
     /**
-     * This function returns the view of the city.
+     * This function returns the view of the city after an observer on the city data was added.
      */
     init {
         cityList.addObserver { notifyDataSetChanged() }
@@ -37,22 +37,20 @@ class CityTemperatureAdapter(context: Context, resource: Int, private val cityLi
         val view: View = convertView ?: LayoutInflater.from(context).inflate(res, parent, false)
         val city = cityList[position]
 
-        val cityName = city.getCityName()
-        val temperature = city.getCurrentTemperature()
-        val time = city.getUpdateTime()
-        val avgTemp = city.getAverageTemperature()
+        val cityNameView = view.findViewById<View>(android.R.id.text1) as TextView
+        val cityInfoView = view.findViewById<View>(android.R.id.text2) as TextView
 
-        val text1 = view.findViewById<View>(android.R.id.text1) as TextView
-        val text2 = view.findViewById<View>(android.R.id.text2) as TextView
+        cityNameView.text = city.getCityName()
+        cityInfoView.text = String.format(context.getString(R.string.cityInfo),
+            city.getCurrentTemperature(),
+            city.getAverageTemperature(),
+            city.getUpdateTime())
 
-        text1.text = cityName
-        text2.text = "Current: $temperature, Avg: $avgTemp,\nChanged: $time"
         if (city.isSubscribed()) {
-            text2.visibility = View.VISIBLE;
+            cityInfoView.visibility = View.VISIBLE
         } else {
-            text2.visibility = View.GONE;
+            cityInfoView.visibility = View.GONE
         }
-
         return view
     }
 }
