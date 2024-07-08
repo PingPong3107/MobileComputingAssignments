@@ -162,26 +162,52 @@ class MainActivity : AppCompatActivity() {
                 if (dateSnapshot.key != currentDate){
                     return
                 }
-                val latestEntrySnapshot = dateSnapshot.children.lastOrNull()
-                latestEntrySnapshot?.let { entrySnapshot ->
-                    val latestEntry = entrySnapshot.value.toString()
-                    try {
-                        val (time, temperature) = latestEntry.split(":")
-                        val city = cityList.find { it.getCityName() == cityName } ?: City(cityName)
-                        city.setCurrentTemperature(temperature)
-                        city.setUpdateTime(time)
-                        if (!cityList.contains(city)) {
-                            cityList.add(city)
-                        }
-                        adapter.notifyDataSetChanged()
-                    } catch (e: Exception) {
-                        Log.e("MainActivity", "Error parsing latest entry", e)
-                        Toast.makeText(this, "Error parsing latest entry", Toast.LENGTH_SHORT).show()
-                    }
+
+                updateOrAddCityTemperature(cityName, dateSnapshot)
+                updateAverageTemperature(cityName, dateSnapshot)
+
+            }
+
+        }
+    }
+
+    private fun updateOrAddCityTemperature(cityName: String, dateSnapshot: DataSnapshot) {
+        val latestEntrySnapshot = dateSnapshot.children.lastOrNull()
+        latestEntrySnapshot?.let { entrySnapshot ->
+            val latestEntry = entrySnapshot.value.toString()
+            try {
+                val (time, temperature) = latestEntry.split(":")
+                val city = cityList.find { it.getCityName() == cityName } ?: City(cityName)
+                city.setCurrentTemperature(temperature)
+                city.setUpdateTime(time)
+                if (!cityList.contains(city)) {
+                    cityList.add(city)
                 }
+                adapter.notifyDataSetChanged()
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error parsing latest entry", e)
+                Toast.makeText(this, "Error parsing latest entry", Toast.LENGTH_SHORT).show()
             }
         }
     }
+
+    private fun updateAverageTemperature(cityName: String, dateSnapshot: DataSnapshot) {
+        val temperatures = dateSnapshot.children.mapNotNull { entrySnapshot ->
+            val entry = entrySnapshot.value.toString()
+            try {
+                val (_, temperature) = entry.split(":")
+                temperature.toDouble()
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error parsing temperature", e)
+                null
+            }
+        }
+        val averageTemperature = temperatures.average()
+        val city = cityList.find { it.getCityName() == cityName }
+        city?.setAverageTemperature(averageTemperature.toString())
+        adapter.notifyDataSetChanged()
+    }
+
 
 
     private fun fetchLatestTemperature(city: City) {

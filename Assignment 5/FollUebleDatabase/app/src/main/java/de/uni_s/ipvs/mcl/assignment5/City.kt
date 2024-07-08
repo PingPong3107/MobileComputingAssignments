@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.round
 import kotlin.reflect.typeOf
 
 class City(private var name: String){
@@ -68,7 +69,8 @@ class City(private var name: String){
 
     fun setAverageTemperature(temperature: String) {
         val averageTemp = try {
-            temperature.toDouble()
+            round(temperature.toDouble()*100)/100
+
         } catch (e: NumberFormatException) {
             null
         }
