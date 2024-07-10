@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
         val cityInput = findViewById<EditText>(R.id.cityInput)
         val tempInput = findViewById<EditText>(R.id.tempInput)
 
-        cityInput.setOnEditorActionListener{ v, actionId, event ->
+        cityInput.setOnEditorActionListener{ _, actionId, event ->
             if(actionId == EditorInfo.IME_ACTION_NEXT ||
                 event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER){
                 tempInput.requestFocus()
@@ -105,12 +105,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        tempInput.setOnEditorActionListener{ v, actionId, event ->
-            if(actionId == EditorInfo.IME_ACTION_DONE ||
+        tempInput.setOnEditorActionListener{ _, actionId, event ->
+            if(actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT ||
                 event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER){
                 val city = cityInput.text.toString()
                 val temp = tempInput.text.toString()
                 checkInputAndAddCity(city, temp)
+                cityInput.setText("")
+                tempInput.setText("")
                 closeKeyboard()
                 true
             } else {
@@ -141,19 +143,30 @@ class MainActivity : AppCompatActivity() {
     private fun insertTemperatureButton() {
         val button = findViewById<Button>(R.id.insertButton)
         button.setOnClickListener {
-            val city = findViewById<EditText>(R.id.cityInput).text.toString()
-            val temp = findViewById<EditText>(R.id.tempInput).text.toString()
-            checkInputAndAddCity(city, temp)
+            val city = findViewById<EditText>(R.id.cityInput)
+            val temp = findViewById<EditText>(R.id.tempInput)
+            checkInputAndAddCity(city.text.toString(), temp.text.toString())
+            city.setText("")
+            temp.setText("")
+            closeKeyboard()
         }
     }
 
+    /**
+     * This function checks the city and temperature input and adds the temperature to a city object.
+     *
+     * @param city The name of the city
+     * @param temp The temperature of the corresponding city
+     * @see addTemperatureToCity
+     */
     private fun checkInputAndAddCity(city: String, temp: String){
-        if (city != "" && temp != "" && city.matches("[a-zA-ZäöüÄÖÜß -]*".toRegex())) {
+        if (city != "" && temp != "" && temp != "." && city.validateCityName()) {
             val temperature = temp.toDouble()
-            addTemperatureToCity(city, temperature)
+
+            // Trim and capitalize city name
+            val cityName = city.trim().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            addTemperatureToCity(cityName, temperature)
             Toast.makeText(this, String.format(getString(R.string.tempAddedToCity), city), Toast.LENGTH_SHORT).show()
-            findViewById<EditText>(R.id.cityInput).setText("")
-            findViewById<EditText>(R.id.tempInput).setText("")
         } else {
             Toast.makeText(this, getString(R.string.tempAddedToCityErr), Toast.LENGTH_SHORT).show()
         }
@@ -304,5 +317,12 @@ class MainActivity : AppCompatActivity() {
         team6ref.child("location").removeValue().addOnCompleteListener {
             Log.d("MainActivity", "All Data deleted successfully")
         }
+    }
+
+    /**
+     * This function validates if the string is a properly formatted city name
+     */
+    private fun String.validateCityName() = all {
+        it.isLetter() || it == '-' || it == ' '
     }
 }
