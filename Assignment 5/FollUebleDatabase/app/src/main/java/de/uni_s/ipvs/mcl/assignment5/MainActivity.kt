@@ -2,9 +2,12 @@ package de.uni_s.ipvs.mcl.assignment5
 
 import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
@@ -25,6 +28,9 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -41,6 +47,29 @@ class MainActivity : AppCompatActivity() {
     private lateinit var listView: ListView
     private lateinit var adapter: CityTemperatureAdapter
     private lateinit var cityList: ObservableMutableList<City>
+    private lateinit var citiesRef: DatabaseReference
+
+    private val childEventListener = object : ChildEventListener {
+        override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
+            handleCitySnapshot(dataSnapshot)
+        }
+
+        override fun onChildChanged(dataSnapshot: DataSnapshot, previousChildName: String?) {
+            handleCitySnapshot(dataSnapshot)
+        }
+
+        override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+            Log.i("MainActivity", "City removal not implemented")
+        }
+
+        override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+            Log.i("MainActivity", "City move not implemented")
+        }
+
+        override fun onCancelled(databaseError: DatabaseError) {
+            Log.e("MainActivity", "Database error occurred: $databaseError")
+        }
+    }
 
     /**
      * This function is called when the activity is created.
@@ -58,8 +87,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         val toolbar: Toolbar = findViewById(R.id.toolbar)
+        toolbar.title = String.format(getString(R.string.mode), "Test DB")
         setSupportActionBar(toolbar)
-        toolbar.title = getString(R.string.app_name)
+
         toolbar.setTitleTextColor(Color.BLACK)
 
         insertTemperatureButton()
@@ -79,6 +109,49 @@ class MainActivity : AppCompatActivity() {
                 city.setSubscribed(!city.isSubscribed())
                 adapter.notifyDataSetChanged()
             }
+        }
+    }
+
+    /**
+     * This function is called when the options menu is created.
+     * The options menu is inflated with the menu_main.xml file.
+     * @param menu The options menu to create.
+     * @return true if the menu is created successfully, false otherwise.
+     */
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    /**
+     * This function is called when an item in the options menu is selected.
+     *
+     * The function changes the Firebase database to the production or test database.
+     * The cities are fetched from the new database.
+     * @param item The item in the options menu that was selected.
+     * @return true if the item is selected successfully, false otherwise.
+     */
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        return when (item.itemId) {
+            R.id.use_prod_database -> {
+                toolbar.title = String.format(getString(R.string.mode), "Prod DB")
+                team6ref = database.getReference()
+                cityList.clear()
+                resetListener()
+                fetchCities()
+                true
+            }
+            R.id.use_test_database -> {
+                toolbar.title = String.format(getString(R.string.mode), "Test DB")
+                team6ref = database.getReference("teams").child("6")
+                cityList.clear()
+                resetListener()
+                fetchCities()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -111,8 +184,8 @@ class MainActivity : AppCompatActivity() {
                 val city = cityInput.text.toString()
                 val temp = tempInput.text.toString()
                 checkInputAndAddCity(city, temp)
-                cityInput.setText("")
-                tempInput.setText("")
+                cityInput.text.clear()
+                tempInput.text.clear()
                 closeKeyboard()
                 true
             } else {
@@ -143,11 +216,11 @@ class MainActivity : AppCompatActivity() {
     private fun insertTemperatureButton() {
         val button = findViewById<Button>(R.id.insertButton)
         button.setOnClickListener {
-            val city = findViewById<EditText>(R.id.cityInput)
-            val temp = findViewById<EditText>(R.id.tempInput)
-            checkInputAndAddCity(city.text.toString(), temp.text.toString())
-            city.setText("")
-            temp.setText("")
+            val cityInput = findViewById<EditText>(R.id.cityInput)
+            val tempInput = findViewById<EditText>(R.id.tempInput)
+            checkInputAndAddCity(cityInput.text.toString(), tempInput.text.toString())
+            cityInput.text.clear()
+            tempInput.text.clear()
             closeKeyboard()
         }
     }
@@ -185,9 +258,8 @@ class MainActivity : AppCompatActivity() {
         val time = System.currentTimeMillis().toString()
 
         val tempRef = team6ref.child("location").child(city).child(date)
-        val string = "$time:$temperature"
 
-        tempRef.push().setValue(string).addOnCompleteListener { task ->
+        tempRef.child(time).setValue(temperature).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Log.d("MainActivity", "Temperature data added successfully")
             } else {
@@ -204,28 +276,15 @@ class MainActivity : AppCompatActivity() {
      * @see handleCitySnapshot
      */
     private fun fetchCities() {
-        val citiesRef = team6ref.child("location")
-        citiesRef.addChildEventListener(object : ChildEventListener {
-            override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
-                handleCitySnapshot(dataSnapshot)
-            }
+        citiesRef = team6ref.child("location")
+        citiesRef.addChildEventListener(childEventListener)
+    }
 
-            override fun onChildChanged(dataSnapshot: DataSnapshot, previousChildName: String?) {
-                handleCitySnapshot(dataSnapshot)
-            }
-
-            override fun onChildRemoved(dataSnapshot: DataSnapshot) {
-                Log.i("MainActivity", "City removal not implemented")
-            }
-
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-                Log.i("MainActivity", "City move not implemented")
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                Log.e("MainActivity", "Database error occurred: $databaseError")
-            }
-        })
+    /**
+     * This function resets the Firebase database listener.
+     */
+    private fun resetListener() {
+        citiesRef.removeEventListener(childEventListener)
     }
 
     /**
@@ -239,15 +298,11 @@ class MainActivity : AppCompatActivity() {
      */
     private fun handleCitySnapshot(dataSnapshot: DataSnapshot) {
         val cityName = dataSnapshot.key
-        val currentDate =
-            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()).toString()
         cityName?.let {
             val latestDateSnapshot = dataSnapshot.children.lastOrNull()
             latestDateSnapshot?.let { dateSnapshot ->
                 updateOrAddCityTemperature(cityName, dateSnapshot)
-                if (dateSnapshot.key == currentDate) {
-                    updateAverageTemperature(cityName, dateSnapshot)
-                }
+                updateAverageTemperature(cityName, dateSnapshot)
             }
         }
     }
@@ -265,9 +320,18 @@ class MainActivity : AppCompatActivity() {
     private fun updateOrAddCityTemperature(cityName: String, dateSnapshot: DataSnapshot) {
         val latestEntrySnapshot = dateSnapshot.children.lastOrNull()
         latestEntrySnapshot?.let { entrySnapshot ->
-            val latestEntry = entrySnapshot.value.toString()
             try {
-                val (time, temperature) = latestEntry.split(":")
+                val time = entrySnapshot.key.toString()
+                if (time.isValidTimestamp().not()) {
+                    Log.e("MainActivity", "Invalid timestamp")
+                    return
+                }
+                val temperature = entrySnapshot.value.toString()
+                if (temperature.isValidTemperature().not()) {
+                    Log.e("MainActivity", "Invalid temperature")
+                    Toast.makeText(this, "Error: $cityName, tmp='$temperature'", Toast.LENGTH_SHORT).show()
+                    return
+                }
                 val city = cityList.find { it.getCityName() == cityName } ?: City(cityName)
                 city.setCurrentTemperature(temperature)
                 city.setUpdateTime(time)
@@ -294,12 +358,10 @@ class MainActivity : AppCompatActivity() {
      */
     private fun updateAverageTemperature(cityName: String, dateSnapshot: DataSnapshot) {
         val temperatures = dateSnapshot.children.mapNotNull { entrySnapshot ->
-            val entry = entrySnapshot.value.toString()
-            try {
-                val (_, temperature) = entry.split(":")
+            val temperature = entrySnapshot.value.toString()
+            if (temperature.isValidTemperature()) {
                 temperature.toDouble()
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Error parsing temperature", e)
+            } else {
                 null
             }
         }
@@ -312,6 +374,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * This function resets the Firebase database.
      */
+    @Suppress("unused")
     private fun resetDatabase() {
         team6ref.child("location").removeValue().addOnCompleteListener {
             Log.d("MainActivity", "All Data deleted successfully")
@@ -323,5 +386,34 @@ class MainActivity : AppCompatActivity() {
      */
     private fun String.validateCityName() = all {
         it.isLetter() || it == '-' || it == ' '
+    }
+
+    /**
+     * This function validates if the string is a properly formatted timestamp
+     */
+    private fun String.isValidTimestamp() = try {
+        val ts = toLong()
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            val formatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
+            formatter.format(Date(ts))
+        }
+        else{
+            DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
+                .withZone(ZoneId.systemDefault())
+                .format(Instant.ofEpochMilli(ts))
+        }
+        true
+    } catch (e: NumberFormatException) {
+        false
+    }
+
+    /**
+     * This function validates if the string is a properly formatted temperature
+     */
+    private fun String.isValidTemperature() = try {
+        toDouble()
+        true
+    } catch (e: NumberFormatException) {
+        false
     }
 }

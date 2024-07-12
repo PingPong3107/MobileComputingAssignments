@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">FollUebleDatabase</string>
+    <string name="mode">FollUebleDatabase: %s</string>
     <string name="insertButtonText">Einfügen</string>
     <string name="city">Stadt</string>
     <string name="temperature">Temperatur</string>
     <string name="tempAddedToCity">Temperature für die Stadt \'%s\' hinzugefügt</string>
     <string name="tempAddedToCityErr">Illegale Eingabe</string>
     <string name="parsingError">Fehler beim Verarbeiten der Temperatur</string>
-    <string name="cityInfo">Aktuell: %s, Durchschnitt: %s,\nVerändert: %s</string>
+    <string name="cityInfo">Aktuell: %s, Durchschnitt: %s,\nDatum: %s</string>
 </resources>

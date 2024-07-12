@@ -129,11 +129,11 @@ class City(private var name: String){
     private fun String.toHumanReadableTime(): String {
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
             val millis = this.toLongOrNull() ?: return "Invalid milliseconds"
-            val formatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
+            val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
             return formatter.format(Date(millis))
         }
         val millis = this.toLongOrNull() ?: return "Invalid milliseconds"
-        return DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
             .withZone(ZoneId.systemDefault())
             .format(Instant.ofEpochMilli(millis))
     }
