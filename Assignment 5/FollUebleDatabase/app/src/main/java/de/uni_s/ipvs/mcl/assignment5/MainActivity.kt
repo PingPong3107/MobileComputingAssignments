@@ -329,7 +329,7 @@ class MainActivity : AppCompatActivity() {
                 val temperature = entrySnapshot.value.toString()
                 if (temperature.isValidTemperature().not()) {
                     Log.e("MainActivity", "Invalid temperature")
-                    Toast.makeText(this, "Error: $cityName, tmp='$temperature'", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, String.format(getString(R.string.errorParsingTemperature), cityName, temperature), Toast.LENGTH_SHORT).show()
                     return
                 }
                 val city = cityList.find { it.getCityName() == cityName } ?: City(cityName)

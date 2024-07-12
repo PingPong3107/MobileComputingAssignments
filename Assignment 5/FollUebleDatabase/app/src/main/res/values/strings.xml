@@ -8,4 +8,5 @@
     <string name="tempAddedToCityErr">Illegal Input</string>
     <string name="parsingError">Error while parsing the temperature</string>
     <string name="cityInfo">Current: %s, Avg: %s,\nDate: %s</string>
+    <string name="errorParsingTemperature">Error: City \'%s\' with \ntemp \'%s\'</string>
 </resources>

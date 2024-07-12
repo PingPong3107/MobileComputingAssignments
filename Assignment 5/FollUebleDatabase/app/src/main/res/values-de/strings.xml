@@ -9,4 +9,5 @@
     <string name="tempAddedToCityErr">Illegale Eingabe</string>
     <string name="parsingError">Fehler beim Verarbeiten der Temperatur</string>
     <string name="cityInfo">Aktuell: %s, Durchschnitt: %s,\nDatum: %s</string>
+    <string name="errorParsingTemperature">Error: Stadt \'%s\' mit \nTemp \'%s\'</string>
 </resources>

@@ -76,7 +76,7 @@ class City(private var name: String){
      */
     fun setCurrentTemperature(temperature: String) {
         currentTemperature = try {
-            temperature.toDouble()
+            round(temperature.toDouble()*100)/100
         } catch (e: NumberFormatException) {
             null
         }
@@ -90,7 +90,6 @@ class City(private var name: String){
     fun setAverageTemperature(temperature: String) {
         averageTemperature = try {
             round(temperature.toDouble()*100)/100
-
         } catch (e: NumberFormatException) {
             null
         }
@@ -111,9 +110,7 @@ class City(private var name: String){
      * @param sub The subscription status of the city.
      */
     fun setSubscribed(sub: Boolean) {
-        Log.d("City", "setSubscribed: $subscribed")
         subscribed = sub
-        Log.d("City", "setSubscribed: $subscribed")
     }
 
     /**
@@ -126,16 +123,22 @@ class City(private var name: String){
     /**
      * This function converts a string representing milliseconds to a human readable time.
      */
-    private fun String.toHumanReadableTime(): String {
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
-            val millis = this.toLongOrNull() ?: return "Invalid milliseconds"
-            val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
-            return formatter.format(Date(millis))
+    private fun String.toHumanReadableTime(): String? {
+        val millis = this.toLongOrNull() ?: return null
+        val pattern = "yyyy-MM-dd HH:mm:ss.SSS"
+        return try {
+            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
+                val formatter = SimpleDateFormat(pattern, Locale.getDefault())
+                formatter.format(Date(millis))
+            } else {
+                DateTimeFormatter.ofPattern(pattern)
+                    .withZone(ZoneId.systemDefault())
+                    .format(Instant.ofEpochMilli(millis))
+            }
+        } catch (e: Exception) {
+            Log.e("City", "Error parsing time", e)
+            null
         }
-        val millis = this.toLongOrNull() ?: return "Invalid milliseconds"
-        return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
-            .withZone(ZoneId.systemDefault())
-            .format(Instant.ofEpochMilli(millis))
     }
 
     /**
