@@ -244,11 +244,10 @@ class MainActivity : AppCompatActivity() {
         cityName?.let {
             val latestDateSnapshot = dataSnapshot.children.lastOrNull()
             latestDateSnapshot?.let { dateSnapshot ->
-                if (dateSnapshot.key != currentDate) {
-                    return
-                }
                 updateOrAddCityTemperature(cityName, dateSnapshot)
-                updateAverageTemperature(cityName, dateSnapshot)
+                if (dateSnapshot.key == currentDate) {
+                    updateAverageTemperature(cityName, dateSnapshot)
+                }
             }
         }
     }
